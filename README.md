@@ -1,14 +1,19 @@
-# spreadsheet-history
+# spreadsheetbench
 
 Results, recipes, and artifacts from running cap-evolve and nine competitor optimizers on **SpreadsheetBench `verified_400`**,
-per the experiment plan in issue [#895](https://github.com/skillberry-ai/cap-evolve/issues/895). An orphan branch, unrelated to
-`main`'s commit history, following the pattern of `skillsbench-history` and `parsec-history`.
+per the experiment plan in cap-evolve issue [#895](https://github.com/skillberry-ai/cap-evolve/issues/895).
 
-## Why this branch exists
+This repo was migrated on 2026-11-10 from the `spreadsheet-history` orphan branch of
+[`skillberry-ai/cap-evolve`](https://github.com/skillberry-ai/cap-evolve), with full commit history preserved. It is one
+of the per-benchmark result repos in the [skillberry-runs](https://github.com/skillberry-runs) org (alongside
+[`skillsbench`](https://github.com/skillberry-runs/skillsbench) and [`parsec`](https://github.com/skillberry-runs/parsec)).
+Clone it like any repo: `git clone git@github.com:skillberry-runs/spreadsheetbench.git`.
+
+## Why this repo exists
 
 cap-evolve produces library code (adapters, scoring, CI), which belongs on `main` as reviewed PRs, and a **result narrative**: what a
 run found, which candidates it tried, what a number does and does not mean. The narrative has no home on `main` and none on
-`benchmark-history` (machine-written and pruned). This branch is where it lives.
+cap-evolve's `benchmark-history` (machine-written and pruned). This repo is where it lives.
 
 ## The experiment
 
@@ -67,15 +72,15 @@ pre-rollout helper gate rejects, so all three of its validation evaluations scor
 | [`results/full_table.json`](results/full_table.json) | the per-seed train/val/test figures behind the tables |
 | [`artifacts/seed/`](artifacts/seed/), [`artifacts/<system>/s<seed>/champion/`](artifacts/) | the seed capability and each frozen champion exactly as scored; the file hashes match `registry.json` |
 | [`recipes/<system>/`](recipes/) | each system's arm code and LSF launcher, `BUILD_RECORD.json` and `deviations_<system>.json` (where our port differs from the published method); `recipes/common/` is the shared rollout and budget layer; CapEvolve's are its project templates |
-| [`scripts/`](scripts/) | the test-window runner, the metering gateway, the automatic test launcher, the LSF wrappers, the table builder, and the script that staged this branch |
+| [`scripts/`](scripts/) | the test-window runner, the metering gateway, the automatic test launcher, the LSF wrappers, the table builder, and the script that staged this content |
 | [`docs/decisions.md`](docs/decisions.md) | the append-only decision log of the whole experiment, including every incident and relaunch |
 | [`reports/`](reports/) | the final tables |
 | [`ui/results.html`](ui/results.html) | a self-contained, sortable results page: one row per system, every seed, and a cost and time table (tokens and wall time from the gateway ledgers in [`results/usage.json`](results/usage.json)); built by `scripts/build_results_page.py` |
 
-Every headline number can be re-derived from this branch alone: each `summary.json` gain equals the mean over tasks of
+Every headline number can be re-derived from this repo alone: each `summary.json` gain equals the mean over tasks of
 champion − seed in the matching `per_task_test_scores.json`.
 
-## Not on this branch
+## Not in this repo
 
 The raw per-rollout and per-episode ledgers, the gateway call ledgers, the LSF logs and the full run folders are kept off-repo in
 `cap-evolve-archive/spreadsheetbench-exp895/`. The benchmark data itself is not stored anywhere here, because it contains the gold answers.
