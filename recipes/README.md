@@ -35,13 +35,13 @@ Recorded as `code_sha=` in every `results/<system>/s<seed>/search/run_meta.txt`:
 | `73103f429fb833883a5c915cd87fe5c5c68fc423` | ACE, CapEvolve (v1), EvoSkill, GEPA, GEPA-full, Meta-Harness, MIPROv2, SkillOpt, Trace2Skill, WikiSkill |
 | `0d791eeb78cf11449b30c464e43344997e15bb74` | CapEvolve v2 |
 
-**Neither commit is on GitHub** (checked 2026-11-17: not in `skillberry-ai/cap-evolve` or any fork
-branch). They exist only in the CCC worktrees above. To keep the runs reproducible, push them from
+**Neither commit is on GitHub** (checked 2026-11-17: not in `skillberry-ai/cap-evolve` or
+`bcarmeli/cap-evolve`). As far as we know they exist only in the CCC worktrees above. To keep the runs reproducible, push them from
 there, for example as tags:
 
 ```bash
-git -C …/cap-evolve-spread-worktrees/sbv400-main tag exp895-main 73103f4 && git -C …/sbv400-main push origin exp895-main
-git -C …/cap-evolve-spread-worktrees/sbv400-k02  tag exp895-k02  0d791ee && git -C …/sbv400-k02  push origin exp895-k02
+cd …/cap-evolve-spread-worktrees/sbv400-main && git tag exp895-main 73103f4 && git push origin exp895-main
+cd …/cap-evolve-spread-worktrees/sbv400-k02  && git tag exp895-k02  0d791ee && git push origin exp895-k02
 ```
 
 (`skillopt_sha=79124b3…` in SkillOpt's `run_meta.txt` is the upstream SkillOpt repo, not cap-evolve.)
