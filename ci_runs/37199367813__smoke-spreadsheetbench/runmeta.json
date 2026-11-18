@@ -1,0 +1,21 @@
+{
+  "run_id": 37199367813,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/37199367813",
+  "bench": "spreadsheetbench",
+  "tier": "smoke",
+  "event": "workflow_dispatch",
+  "source": "manual (run/gemma-self-opt-smoke)",
+  "pr": null,
+  "branch": "run/gemma-self-opt-smoke",
+  "sha": "581a90a0cdabbdaf86e62968da39c7cd70dc4126",
+  "date": "2026-10-04T12:59:47Z",
+  "iterations": 1,
+  "trials": 3,
+  "agent_model": "ibm-rits/google/gemma-4-31B-it",
+  "optimizer_model": "ibm-rits/google/gemma-4-31B-it",
+  "gate_k_se": 1.0,
+  "algorithm": "hill-climb-all",
+  "warm_seed": false,
+  "reward_metric": "soft_no_recalc",
+  "conclusion": "success"
+}

@@ -1,0 +1,20 @@
+{
+  "run_id": 36387149344,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/36387149344",
+  "bench": "spreadsheetbench",
+  "tier": "full_verified",
+  "event": "workflow_dispatch",
+  "source": "manual (run/no-skill-skillopt-split)",
+  "pr": null,
+  "branch": "run/no-skill-skillopt-split",
+  "sha": "210a24c8bea4ee410af6a407f11373bc28291b54",
+  "date": "2026-09-28T14:39:01Z",
+  "iterations": 0,
+  "trials": 1,
+  "agent_model": "ibm-rits/google/gemma-4-31B-it",
+  "optimizer_model": "ibm-ete-int/aws/claude-opus-5",
+  "gate_k_se": 0.2,
+  "algorithm": "hill-climb-all",
+  "warm_seed": false,
+  "conclusion": "failure"
+}

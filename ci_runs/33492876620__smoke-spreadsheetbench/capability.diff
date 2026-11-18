@@ -1,0 +1,52 @@
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/JOURNAL.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_extent2/JOURNAL.md
+index 5ccd099..b9d025c 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/JOURNAL.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_extent2/JOURNAL.md
+@@ -34,4 +34,36 @@ Append your entry for THIS iteration below the marker, using this shape (INTENT
+ > **RESULT (framework, objective):** REJECTED (champion unchanged) · val=0.540 Δ=+0.020 · fixed={52216} · broke={40467, 47484}. — its WHOLE batch was reverted; re-introduce only the edits that did NOT break a task above, dropping/redesigning the ones that did.
+ <!-- cand_extent: rejected val=0.540 Δ=+0.020 -->
+ 
++## Iteration cand_extent2 — round 2: NARROWED data-extent rule (ACCEPT)
++- Change (prompt.md): kept the extent-generalization rule from cand_extent but scoped it — "when your answer aggregates/transforms a SOURCE block whose length can vary, detect real extent (ws.max_row/max_column, scan to empty); this affects only how you READ, the cells you WRITE stay exactly answer_position." Surface = prompt.md.
++- RESULT (round 2, gated vs concurrent control ctl_null_i1, evidence_bar 0.0067, gate_threshold 0.0414): reward 0.5633, gate_delta +0.05 → ACCEPT, verdict_stable across both control refs. Only regression 53161 = NOISE (also dropped in control replicate ctl_null_i1r1). 40467 (the real regression that sank cand_extent in round 1) is NOT regressed by the candidate here — it flickered only in the control → the narrowing removed the over-generalization trigger, exactly as hypothesized in round 1's handover.
++- Built on round 1 RESULT: cand_extent (+0.04, rejected, regressed 40467). The refinement kept the failing-task gain and dropped the 40467 regression, clearing the bar. Did NOT re-test refuted forms cand_type / cand_scope.
++- Focus next round (round 3): try to STACK a second safe lever on the new champion cand_extent2 for more gain (candidate 32468/374-9 value errors are computation-hard and not reliably prose-fixable; the remaining honest headroom is small). If nothing beats the champion, keep cand_extent2 and seal.
++
++> **RESULT (framework, objective):** ACCEPTED (new champion) · val=0.563 Δ=+0.043 · fixed={52216} · broke={—}.
++<!-- cand_extent2: ACCEPTED val=0.563 Δ=+0.043 -->
++
++## Iteration cand_extent2 — round 2: NARROWED data-extent rule (ACCEPT)
++- Change (prompt.md): kept the extent-generalization rule from cand_extent but scoped it — "when your answer aggregates/transforms a SOURCE block whose length can vary, detect real extent (ws.max_row/max_column, scan to empty); this affects only how you READ, the cells you WRITE stay exactly answer_position." Surface = prompt.md.
++- RESULT (round 2, gated vs concurrent control ctl_null_i1, evidence_bar 0.0067, gate_threshold 0.0414): reward 0.5633, gate_delta +0.05 → ACCEPT, verdict_stable across both control refs. Only regression 53161 = NOISE (also dropped in control replicate ctl_null_i1r1). 40467 (the real regression that sank cand_extent in round 1) is NOT regressed by the candidate here — it flickered only in the control → the narrowing removed the over-generalization trigger, exactly as hypothesized in round 1's handover.
++- Built on round 1 RESULT: cand_extent (+0.04, rejected, regressed 40467). The refinement kept the failing-task gain and dropped the 40467 regression, clearing the bar. Did NOT re-test refuted forms cand_type / cand_scope.
++- Focus next round (round 3): try to STACK a second safe lever on the new champion cand_extent2 for more gain (candidate 32468/374-9 value errors are computation-hard and not reliably prose-fixable; the remaining honest headroom is small). If nothing beats the champion, keep cand_extent2 and seal.
++
++## Iteration cand_e2_typecode — round 3: type-enforcement stacked on champion (INCONCLUSIVE)
++- Goal: stack a second SAFE lever on champion cand_extent2 for extra gain, attacking the remaining prose-addressable failure mode (grader compares TYPE as well as value: float 25.0 fails an int-25 cell; "5" fails a numeric 5).
++- Three siblings, all built FROM cand_extent2:
++  - cand_e2_typecode (prompt.md): type rule as a concrete CODE recipe — openpyxl copy `dst[addr]=src[addr].value` (not pandas), collapse integral float `int(v) if isinstance(v,float) and v.is_integer() else v`, never number-as-string. (Different FORM from round-1's refuted type PROSE.)
++  - cand_e2_verifytype (task_template.md, fresh SURFACE): strengthened the existing step-3 verification to print value AND `type()` and check int-not-float / not-text before finishing.
++  - cand_e2_both: both edits stacked.
++- RESULT (round 3, full val, 10 trials, k_se=1.0, gated vs concurrent control; two byte-identical control replicates ctl_null_i2=0.550, ctl_null_i2r1=0.573, evidence_bar=0.0233):
++  - cand_e2_typecode reward 0.600: +0.050 vs ctl_null_i2 (accept, thr 0.024) BUT +0.0267 vs ctl_null_i2r1 (reject, thr 0.042) -> verdict UNSTABLE -> INCONCLUSIVE. Its edge sits inside the control-replicate gap; not resolvable at n=10.
++  - cand_e2_both reward 0.577: +0.0267 / +0.0033 -> accept/reject -> unstable -> inconclusive (weaker).
++  - cand_e2_verifytype reward 0.553: +0.0033 / -0.020 -> reject/reject -> STABLE REJECT. The template already had a verify step; adding type-checking prose to it did not move the metric.
++- Booking: cand_e2_typecode as INCONCLUSIVE (charges iteration, not stall; kept out of rejected.jsonl — type-enforcement is not refuted as an idea, it just could not be resolved from re-measurement noise at this n). Champion UNCHANGED = cand_extent2 (0.5633).
++- NOTE on round.py: this round.py invocation's console/round_i2.json aggregation emitted null rewards for all rows despite all 100/100 rollouts being written and fully scored per tag (verified directly + via gate_check.py). Verdicts above were computed with gate_check.py over the existing rollouts and confirmed by hand-paired diffs; no re-eval was run (re-running the same tags only REPLACES t0..t9, buying no evidence).
++- For a future run wanting to pursue type-enforcement: it needs MORE trials (grow.py) to resolve a ~+0.03-0.05 effect below the n=10 noise floor, or a form that fixes the hard-computation tasks (32468/374-9/52216) which prose does not reliably reach.
++
++> **RESULT (framework, objective):** UNRESOLVED (not judged; champion unchanged) · val=0.600 Δ=+0.037 · fixed={53161} · broke={52216}. — the measurement could not separate this edit from re-measurement noise, so it is NOT evidence against the edit. Its batch was still reverted. To resolve it, re-measure it under a FRESH tag (re-running the same tag REPLACES its rollouts) or with more trials in ONE evaluation; do not redesign it on this round's numbers, and do not re-derive it as a new idea.
++<!-- cand_e2_typecode: unresolved val=0.600 Δ=+0.037 -->
++
+ <!-- cap-evolve:journal-append-below — add your Iteration entry under this line; do not edit anything above it -->
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/prompt.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_extent2/prompt.md
+index 370e8ac..42626d0 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/prompt.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_extent2/prompt.md
+@@ -5,5 +5,6 @@ Solve the given spreadsheet manipulation question precisely:
+ - For Cell-Level Manipulation questions, modify or fill in values ONLY within the exact cell(s) given in answer_position.
+ - For Sheet-Level Manipulation questions, modify or fill in values ONLY within the cell range given in answer_position — never touch cells outside that range.
+ - Prefer computing and writing LITERAL values (e.g. with pandas/openpyxl) over live spreadsheet formulas, so the result is unambiguous when the file is re-opened for grading.
++- When your answer aggregates or transforms a block of SOURCE data whose length can vary (e.g. summing a column, matching or iterating rows until the data ends, copying a variable number of rows), detect the real data extent from the file at run time — scan to the last non-empty row/column, or use openpyxl `ws.max_row` / `ws.max_column` — instead of assuming the row/column count shown in the small preview. This task is graded on other copies of the workbook whose data extent differs from the preview, so code that hard-codes a row count taken from the example will read too few or too many rows on those copies. This affects only how you READ and aggregate the source; the cells you WRITE are still exactly those named in answer_position.
+ - Always save your result to the exact output_path given, creating any missing parent directories first.
+ - If code execution returns an error, read the traceback carefully and fix the code — do not repeat a failing approach unchanged.

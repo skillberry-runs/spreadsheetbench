@@ -1,0 +1,20 @@
+{
+  "run_id": 33046360451,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/33046360451",
+  "bench": "spreadsheetbench",
+  "tier": "smoke",
+  "event": "workflow_dispatch",
+  "source": "manual (fix/agent-optimize-gate-mode-and-honest-null-reporting)",
+  "pr": null,
+  "branch": "fix/agent-optimize-gate-mode-and-honest-null-reporting",
+  "sha": "d232cebed9656d136ee5584c50fb6ff5a3cde1df",
+  "date": "2026-08-27T13:19:28Z",
+  "iterations": 3,
+  "trials": 10,
+  "agent_model": "Azure/gpt-5-mini-2025-08-07",
+  "optimizer_model": "claude-opus-4-8",
+  "gate_k_se": 1.0,
+  "algorithm": "agent-optimize",
+  "warm_seed": false,
+  "conclusion": "success"
+}

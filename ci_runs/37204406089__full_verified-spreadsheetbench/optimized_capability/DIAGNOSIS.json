@@ -1,0 +1,82 @@
+{
+  "candidate": "cand_0001",
+  "headline": "Initial capability creation focusing on literal values, full range coverage, and error handling",
+  "clusters": [
+    {
+      "id": "A",
+      "name": "Formula instead of Value",
+      "detail": "Agent writes Excel formulas instead of calculating values in Python and writing literals. Scorer does not recalculate formulas.",
+      "tasks": ["37378", "46897"],
+      "scope": "SYSTEMIC",
+      "latent": false,
+      "tag": "BEHAVIORAL"
+    },
+    {
+      "id": "B",
+      "name": "Incomplete/Empty Range",
+      "detail": "Agent fails to fill all required cells in the answer range, leaving some empty.",
+      "tasks": ["227-40", "48527", "50768"],
+      "scope": "WIDESPREAD",
+      "latent": false,
+      "tag": "BEHAVIORAL"
+    },
+    {
+      "id": "C",
+      "name": "Value Mismatch",
+      "detail": "Agent calculates slightly wrong values (too high, too low, or different type).",
+      "tasks": ["267-18", "39046", "43436", "51-12"],
+      "scope": "BOUNDED",
+      "latent": false,
+      "tag": "BEHAVIORAL"
+    },
+    {
+      "id": "D",
+      "name": "Excel Error Text",
+      "detail": "Agent writes cells containing Excel error strings (e.g., #VALUE!).",
+      "tasks": ["37456"],
+      "scope": "BOUNDED",
+      "latent": false,
+      "tag": "BEHAVIORAL"
+    }
+  ],
+  "edits": [
+    {
+      "id": "E1",
+      "title": "Forbid formulas in answer cells",
+      "files": ["prompt.md"],
+      "lever": "CONTRACT",
+      "clusters": ["A"],
+      "blast_radius": "BOUNDED",
+      "verified": "37378, 46897 wrote formulas; new contract forbids this."
+    },
+    {
+      "id": "E2",
+      "title": "Mandatory verification of answer range",
+      "files": ["task_template.md"],
+      "lever": "BEHAVIORAL",
+      "clusters": ["B"],
+      "blast_radius": "BOUNDED",
+      "verified": "227-40, 48527 left cells empty; verification step forces filling."
+    },
+    {
+      "id": "E3",
+      "title": "Example of correct calculation and writing",
+      "files": ["prompt.md"],
+      "lever": "KNOWLEDGE",
+      "clusters": ["C"],
+      "blast_radius": "BOUNDED",
+      "verified": "General guidance and example reduce logic errors."
+    },
+    {
+      "id": "E4",
+      "title": "Forbid Excel error strings",
+      "files": ["prompt.md"],
+      "lever": "CONTRACT",
+      "clusters": ["D"],
+      "blast_radius": "BOUNDED",
+      "verified": "37456 wrote error text; contract forbids this."
+    }
+  ],
+  "skipped": [],
+  "techniques": ["Tighten Output Contract", "Ordered Procedure", "Worked Example"]
+}

@@ -1,0 +1,20 @@
+{
+  "run_id": 32971129203,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/32971129203",
+  "bench": "spreadsheetbench",
+  "tier": "smoke",
+  "event": "workflow_dispatch",
+  "source": "manual (main)",
+  "pr": null,
+  "branch": "main",
+  "sha": "323ed3b5e1236b99544827f9c6b25820dc5aab8f",
+  "date": "2026-08-26T14:51:01Z",
+  "iterations": 3,
+  "trials": 3,
+  "agent_model": "Azure/gpt-5-mini-2025-08-07",
+  "optimizer_model": "claude-opus-4-8",
+  "gate_k_se": 1.0,
+  "algorithm": "agent-optimize",
+  "warm_seed": false,
+  "conclusion": "success"
+}

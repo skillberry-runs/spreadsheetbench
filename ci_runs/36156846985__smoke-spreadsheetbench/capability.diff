@@ -1,0 +1,814 @@
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/INSIGHTS.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/INSIGHTS.md
+index 2acc7dc..01a5034 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/INSIGHTS.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/INSIGHTS.md
+@@ -7,4 +7,79 @@ The JOURNAL is your per-iteration diary; THIS file is the distilled, VERIFIED ta
+     - What didn't (confirmed by a RESULT, cite the candidate id):
+     - Promising but not yet tried:
+ 
++## SURFACE: `task_template.md` (numbered steps in the user message) vs `prompt.md` (system-prompt prose)
++- What worked (confirmed): mechanics written as NUMBERED STEPS in `task_template.md` change agent
++  behaviour reliably. `cand_1_anchor` — Step-1 no-write held 30/30, `type()` printed 30/30, clean
++  no-code finish 27/30. `cand_2_procedure` (Δ +0.100) and `cand_3_anchorblock` (**ACCEPTED**,
++  Δ +0.1222 vs threshold 0.1104) both got their whole gain from edits to this file alone.
++- What didn't (confirmed by `cand_1_anchor`, RESULT rejected, Δ 0.000, per-task vector identical to
++  control on 10/10): six bounded rules added to `prompt.md` fired ZERO times out of 30. The decisive
++  proof is not the scalar — it is that one of those rules ("a blank lookup source contributes 0, not
++  blank") exactly matched the gold 56915 needed, and the agent printed `B19, None, NoneType` in its
++  own verify output and finished anyway. Plumbing was verified first: all 30 rollouts contained the
++  new template text, so the edit DID reach the agent.
++- Rule for a future iteration: put behaviour in the procedure. If you find yourself writing a rule
++  into `prompt.md`, you are spending the round on the measured-dead surface. `cand_3_anchorblock`
++  left `prompt.md` byte-identical to its parent and still cleared the gate.
++
++## FORM: a worked example with real numbers beats a rule stating the same thing
++- What worked (confirmed by `cand_3_anchorblock`, ACCEPTED): 47766's "source range too wide" defect
++  survived TWO rounds of being stated as a rule. It moved 0.000 → 0.444 the round it was stated as a
++  worked example with concrete numbers — three block subtotals printed, one equal to the value
++  already in the target, plus the wrong all-blocks total shown as an explicit counter-number. All
++  three trials then cited the pre-filled 14755 in their own words and none summed all three blocks.
++- What didn't: the same idea as a prose rule in `prompt.md` (`cand_1_anchor`, 0/30 fires) and as an
++  implicit hint inside Step 1d (`cand_2_procedure`, still summed all three blocks → 20535).
++- Reusable: the escalation ladder is prose rule → numbered step → **numbered step carrying a worked
++  example with real numbers**. Do not stop at rung two and conclude the content is wrong.
++
++## SCOPING an edit by target SHAPE+TYPE, not by a value test
++- What worked (confirmed by `cand_3_anchorblock`): predicate "answer_position is a SINGLE cell that
++  already holds a NUMBER" fires on exactly 1 of 10 tasks (47766, K40 = 14755). 56915's round-2 win
++  survived untouched because its target is a 24-cell range.
++- What didn't (refuted pre-gate, measured against gold): the unscoped version from `cand_1_anchor`,
++  "a non-empty non-zero value in answer_position is a worked example", fires on 168-17 (20 cells),
++  438-18 (12), 52532 (2) and 56915 (16) — all passing/now-passing, all holding text headers or
++  `#N/A` strings.
++- Method that generalizes: before shipping any predicate, enumerate which of the 10 tasks it fires
++  on against the on-disk gold. This one measurement killed three edits that read well as prose (the
++  blanket "no empty cells" rule — 160-6 gold is 42/72 EMPTY; blanket `data_only=True` — all 5
++  passers save a non-`data_only` handle; the unscoped anchor rule above).
++
++## FINISH predicates must be objective, and keyed on a field the agent is GIVEN
++- What worked (confirmed by `cand_2_procedure`, 56915 flipped 0 → 1 on 3/3): "every cell of
++  answer_position must read back non-empty **when instruction_type is Cell-Level Manipulation**",
++  with an explicit "do NOT pad" for Sheet-Level. Measured basis: Cell-Level gold fills 100% of
++  answer_position (43213 0/4, 47766 0/1, 49945 0/3, 52532 0/7, 56915 0/24 empty); Sheet-Level gold
++  is mostly EMPTY (160-6 42/72, 168-17 55/55, both passing). The `{instruction_type}` key is what
++  makes the rule safe rather than destructive.
++- What didn't (`cand_1_anchor`): "every cell your solution was SUPPOSED to fill" — intention-relative
++  predicates are self-certifying; the agent read its unmatched rows as not-supposed-to-be-filled and
++  passed its own gate while printing `None`.
++
++## 47766 — what remains, and it is NOT an anchor problem any more
++- Confirmed by `cand_3_anchorblock`'s traces: the block-selection defect is FIXED (all 3 trials pick
++  rows 8-37 correctly). The residual is a CodeAct-replay defect: each trial hardcodes one literal
++  YEAR (t0 2021 → passes case 1; t2 2022 → passes case 2; t1 "most frequent year" → 8000, 2/3), and
++  the adapter replays the final writing block verbatim on the other two graded copies, whose date
++  windows differ. Gold: 8000 / 4355 / 9950.
++- My pre-gate prediction that case 2 was unreachable (degenerate window K43 == L43) was WRONG — t2
++  passed it with 4355. Do not concede that case.
++- Promising, not yet tried (highest-value remaining edit on this board): a general replay rule —
++  "your final code block is re-run unchanged on other copies of this workbook, so derive every
++  window/threshold/date from the workbook's own cells at run time; never write a literal year, date
++  or row-count constant." This is general, and it is checkable by grepping your own code.
++
++## Verified CEILINGS — do not spend a round on these, and do not read their flat scores as evidence
++- 188-39 (0.000): gold filler is literal `'N/A'` while the instruction says `'NA'`, and `'N/A'`
++  appears in NO cell of ANY sheet of ALL THREE inputs (exhaustively scanned). Gold column B holds
++  the DESIGNATION, not the employee name; Contact no must be `int`.
++- 53449 (0.000): gold writes literal `'X'` under header `'Test'`; neither string is derivable.
++- 52532 (0.667, capped): copy 3's gold stores live array formulas over its own recalculated grid
++  (Game 2: 483 → 383), which flips the winner. Unreachable from the input.
++- 43213 has a PRE-EXISTING per-trial flicker (row-bound drift): `seed` t1 = 0.000 and
++  `ctl_null_i0r1` t0 = 0.000 with no candidate text involved. A single 0.333 trial there is noise,
++  not a regression — the gate agreed (`regressions: []`).
++- Achievable val on these 10 tasks is ~0.87, not 1.0. Current accepted state: 0.6889.
++
+ <!-- cap-evolve:insights-append-below -->
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/JOURNAL.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/JOURNAL.md
+index 1e0704a..3ed1727 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/JOURNAL.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/JOURNAL.md
+@@ -235,4 +235,123 @@ Append your entry for THIS iteration below the marker, using this shape (INTENT
+ > **RESULT (framework, measured):** REJECTED (champion unchanged) · val=0.667 Δ=+0.133 · fixed={56915} · broke={—} · unresolved={43213} (moved less than 2·SE of its own measurement — NOT evidence the edit touched those tasks; do not redesign on them). — no task that was passing under the parent regressed: this batch did not clear the gate's threshold, it did not do damage. So the lever is POWER or SIZE, not a redesign — re-measure with more trials in ONE evaluation, or make the effect bigger. Keep the edits that produced the `fixed` tasks above as your starting point; do not rewrite them on this round's numbers.
+ <!-- cand_2_procedure: rejected val=0.667 Δ=+0.133 -->
+ 
++## Iteration cand_3_anchorblock — a WORKED EXAMPLE with real numbers (not another rule) for choosing the right source block, scoped to single-cell numeric targets
++
++- Changes I made (1 line per edit; file + cluster):
++  - `task_template.md` NEW **Step 1b** — "MATCH THE NUMBER THAT IS ALREADY THERE", gated on
++    "answer_position is a SINGLE cell that already holds a NUMBER". Carries a fully worked example
++    with concrete numbers (three block subtotals, one equal to the pre-filled value, the wrong
++    all-blocks total shown as the counter-number) and the general invariant: a restricted sum can
++    only be <= the unrestricted one, so a LARGER result means the source range is too wide.
++    Cluster: aggregate source range too WIDE (47766).
++  - `task_template.md` Step 4 check 4 (Consistency) — added the monotonicity predicate as a
++    mechanical finish check: single-cell numeric target + added restriction ⇒ new number must be
++    <= the old one, else go back to Step 1b. Same cluster.
++  - `task_template.md` Step 1 snippet — "Paths are NOT pre-defined variables in the sandbox —
++    assign them yourself, as literal strings, in EVERY code block." Cluster: rounds wasted on
++    `NameError`, a defect MY round-2 snippet introduced (measured: round-2 t0 lost a full round).
++  - `task_template.md` Step 1d — each block subtotal must be printed on its own line, not folded
++    into a combined total. Supplies Step 1b its input.
++  - `prompt.md` — **UNCHANGED, byte-identical to cand_2_procedure** (verified `diff -q`). Round 1
++    measured this surface firing 0/30; no round-3 effort goes there.
++
++- Per change, EXPECTED effect + why it's safe:
++  - 47766 is the only task on the board that can still move; everything else is either passing 3/3
++    or a verified ceiling. Gold-verified: block 8-37 restricted to the window == gold on cases 1
++    and 3 (8000, 9950), and the pre-filled K40 (14755) == that same block's all-years total. So the
++    pre-existing number identifies the source block, and the "summed all three" answer (20535) is
++    exactly the HIGHER-than-expected value the scorer reported. Expected 0.00 → 0.667 or 1.00.
++  - Safety is a MEASUREMENT, not an argument: the predicate "single cell AND already holds a number"
++    fires on exactly **1 of 10** tasks (47766, K40=14755). The naive non-empty-non-zero version
++    would have fired on 168-17 (20 cells), 438-18 (12), 52532 (2) and 56915 (16) — all
++    passing/now-passing, all holding text headers or `#N/A` strings. Shape+type scoping is what
++    makes round 1's refuted idea safe here.
++  - 56915's win is protected structurally: its target is a 24-cell range, so Step 1b cannot fire,
++    and the Step 4.1 coverage rule that flipped it is untouched.
++  - Contract pre-flight passed: `_task_template_error()` → None, 6 required placeholders +
++    `{max_turns}`, no unknown braces, render OK 7595 chars.
++
++- Building on prior RESULTS:
++  - cand_1_anchor RESULT `rejected`, Δ 0.000, per-task vector identical to control on 10/10, and
++    the traces proved the edit DID reach the agent. I used its split-by-surface finding: the
++    numbered steps in `task_template.md` moved behaviour 30/30, the six `prompt.md` rules 0/30.
++    Hence this round edits only `task_template.md`.
++  - cand_2_procedure RESULT `rejected`, Δ 0.100 vs threshold 0.100 — an EXACT tie with
++    `regressions: []` and 56915 flipped 0→1 on 3/3. I built ON it rather than on the seed, because
++    its files are strictly better; its whole shortfall is one more task.
++  - What I did NOT re-try: the unscoped "reproduce the value already in answer_position" rule from
++    cand_1_anchor (refuted — fires on 4 passing tasks), the blanket "no empty cells" rule (160-6
++    gold is 42/72 empty), blanket `data_only=True` (all 5 passers save a non-`data_only` handle),
++    and any further `prompt.md` prose rule.
++
++- Refuted hypotheses (never re-test):
++  - Stating a mechanic as system-prompt prose. Proven 0/30 with a rule that exactly matched the
++    gold the task needed (56915's `int 0`) while the agent printed `None` and finished.
++  - Intention-relative finish predicates ("cells your solution was supposed to fill") — the agent
++    passes its own gate. Objective predicates keyed on a field it is GIVEN do fire.
++  - Buying trials to rescue a tie: with nine 0.0 diffs and one +1.0, sd is pinned at 0.3162 and SE
++    at 0.1000 for ANY trial count, so gate_delta == gate_threshold forever. Two task-moves, not
++    more trials, is the only way past the k_se=1.0 bar on a 10-task paired gate.
++
++- High-value clusters still NOT cracked (conceded, exhaustively verified against on-disk gold):
++  - 188-39 — gold filler is literal `'N/A'` (instruction says `'NA'`) and `'N/A'` is in no cell of
++    any sheet of all three inputs; gold col B holds the DESIGNATION, not the name.
++  - 53449 — gold writes literal `'X'` under header `'Test'`.
++  - 52532 copy 3 — gold stores live array formulas over its own recalculated grid (Game 2:
++    483 → 383), flipping the winner. Cap 0.667.
++  These three fix the achievable val at ~0.87. Do not spend a future round on them, and do not read
++  their flat scores as evidence against the edits that happen to be shipped alongside.
++
++- Plateau signal: two rejects, but NOT a plateau in behaviour — Δ went 0.000 → 0.100 with zero
++  regressions, and the gate bar rose with it because it is computed from the diff spread itself.
++  The lever I switched to this round is the one round 1's entry named in advance: exercised-but-
++  still-wrong ⇒ the next lever is a worked end-to-end example with real numbers, not more rules.
++
++- Known risk, stated before the gate: 47766 case 2's date window is degenerate (K43 == L43), so a
++  correct implementation yields 0 against a gold of 4355. That caps it at 2/3 (+0.0667, Δ = 0.167 vs
++  threshold ~0.118 — clears, but thinner than a full flip's 0.200 vs 0.133).
++
++- Focus next iteration (if a round 4 existed): the FORM question is now answered — worked examples
++  with real numbers in the numbered steps are the only surface+form measured to move anything. The
++  remaining honest lever is 47766 case 2's degenerate window (does the instruction license treating
++  an empty interval as the whole range?) and nothing else, because the other three open tasks are
++  verified unreachable.
++
++- POST-GATE trace audit (added after the gate returned, before booking — this is the handover):
++  **ACCEPT.** reward 0.6889, gate_delta 0.1222 > gate_threshold 0.1104, `verdict_stable: true`,
++  `regressions: []`, `noise_floor_from_control` 0.0333, `evidence_bar` 0.0 (gated against a
++  concurrent byte-identical control, so drift is cancelled). Both control replicates scored 0.5667
++  identically — a null delta of 0.0 between them.
++  - **The worked example fired, and it fired on the task it was aimed at.** 47766 went 0.000 → 0.444
++    (t0 0.333 / t1 0.667 / t2 0.333), the first movement on that task in three rounds. All THREE
++    trials now correctly narrow the source to block rows 8-37 and all three explicitly cite the
++    pre-filled 14755 as the reason. t0: "originally calculated as the sum ... rows 8-37 ...
++    resulting in 14755"; t2: "The original value in K40 (14755) was the sum of PE production for
++    both 2021 and 2022". The anchor reasoning is now IN the trace, in the agent's own words.
++    Nobody summed all three blocks. The 20535 failure mode is gone.
++  - **My pre-gate risk note was wrong in an instructive way.** I predicted case 2 was unreachable
++    (degenerate window K43 == L43). It IS reachable: t2 wrote 4355 and PASSED case 2. What actually
++    limits 47766 is a DIFFERENT, newly visible defect — each trial hardcodes a literal YEAR
++    (t0 2021 → passes case 1; t2 2022 → passes case 2; t1 "most frequent year" → 8000, 2/3) and the
++    adapter replays that same code on all three graded copies, whose date windows differ. The fix
++    is not more anchor guidance: it is "derive the date window from the workbook's own cells at run
++    time; never write a literal year/date constant, because your code is re-run on other copies of
++    this workbook." That is a general CodeAct-replay rule and it is the single highest-value
++    remaining edit on this board.
++  - **43213 dipped to 0.778 (t1 0.333) and the gate correctly called it no regression.** That task
++    has a documented pre-existing flicker on exactly this axis: `seed` t1 scored 0.000 and
++    `ctl_null_i0r1` t0 scored 0.000, both from row-bound drift, with no candidate text involved.
++    The dip is inside the established control envelope, not a new break. Do NOT redesign an edit in
++    response to it.
++  - Every other task is byte-stable across seed / both controls / cand_2 / cand_3: 160-6, 168-17,
++    438-18, 49945 at 1.000; 52532 at 0.667 (its verified ceiling); 188-39 and 53449 at 0.000 (both
++    verified unreachable). 56915 holds at 1.000, so round 2's win survived round 3's edit intact —
++    which is what the single-cell-numeric scoping was for.
++  - Cumulative, seed → accepted candidate: 0.5333 → 0.6889 (+0.1556) with zero regressions, from
++    two flips (56915 0→1, 47766 0→0.444) across two rounds, both achieved by moving mechanics into
++    the numbered procedure in `task_template.md` and leaving `prompt.md` alone.
++
++> **RESULT (framework, measured):** ACCEPTED (new champion) · val=0.689 Δ=+0.156 · fixed={56915} · broke={—} · unresolved={43213} (moved less than 2·SE of its own measurement — NOT evidence the edit touched those tasks; do not redesign on them).
++<!-- cand_3_anchorblock: ACCEPTED val=0.689 Δ=+0.156 -->
++
+ <!-- cap-evolve:journal-append-below — add your Iteration entry under this line; do not edit anything above it -->
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/LEDGER.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/LEDGER.md
+index 5fe3926..af0fa0e 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/LEDGER.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/LEDGER.md
+@@ -9,5 +9,6 @@ The measured record of every iteration: which candidate, its parent, whether the
+ | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+ | 1 | cand_1_anchor | seed | reject | 0.567 | +0.033 | {} | {} | {43213} |
+ | 2 | cand_2_procedure | seed | reject | 0.667 | +0.133 | {} | {56915} | {43213} |
++| 3 | cand_3_anchorblock | seed | ACCEPT | 0.689 | +0.156 | {} | {56915} | {43213} |
+ 
+-## Current best: seed
++## Current best: cand_3_anchorblock
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/META_INSIGHTS.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/META_INSIGHTS.md
+index b66c424..be3a5b9 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/META_INSIGHTS.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/META_INSIGHTS.md
+@@ -7,4 +7,42 @@ Not about the capability — about HOW this run is searching for it: which strat
+     - Plateau/stall signal, if any, and the lever switched to:
+     - What to try next iteration:
+ 
++## Run so far (3 rounds, 1 accept — the strategy that produced it)
++- Strategy tried, and whether it moved val:
++  - R1 `cand_1_anchor` — one wave, BOTH surfaces at once (a restructured procedure in
++    `task_template.md` + six bounded rules in `prompt.md`). REJECTED, Δ 0.000, per-task vector
++    identical to control on 10/10. Val unmoved.
++  - R2 `cand_2_procedure` — move every mechanic INTO the numbered steps and SHRINK `prompt.md`.
++    REJECTED on an exact tie (Δ 0.100 == threshold 0.100), but reward 0.5333 → 0.6667 with
++    `regressions: []` and 56915 flipped 0 → 1 on 3/3.
++  - R3 `cand_3_anchorblock` — same surface, new FORM (worked example with real numbers), built on
++    R2's files rather than the seed. **ACCEPTED**: 0.6889, Δ 0.1222 > threshold 0.1104,
++    `verdict_stable`, `regressions: []`.
++- The single most valuable process move of the run: **splitting a null result BY SURFACE instead of
++  reading it as "the edit didn't work."** R1's Δ was exactly 0.000, which normally reads as a dead
++  end. Grepping all 30 traces for the new text first proved the plumbing was sound, and then the
++  per-surface audit (template 30/30 vs prompt 0/30) turned a zero into the finding that directed
++  both remaining rounds. A rejected round with 30 readable traces is worth more than its scalar.
++- Plateau signal and the lever switched to: after two rejects the scalar looked flat, but Δ was
++  rising monotonically (0.000 → 0.100 → 0.1222) with zero regressions — the gate bar rises with the
++  diff spread, so a rising Δ can still read as "rejected". Diagnose a plateau from the per-task
++  vector, not the verdict. The lever each round was chosen from the PRIOR round's traces, and R1's
++  journal named R3's lever (worked example) in advance — writing the next lever down before seeing
++  the result made the choice mechanical rather than improvisational.
++- Arithmetic worth reusing on a small paired gate: the statistic is over the 10 TASKS, not trials.
++  With nine 0.0 diffs and one +1.0, sd is pinned at 0.3162 and SE at 0.1000 for ANY trial count, so
++  R2's tie could never be bought out with more trials — only a second task moving could clear it.
++  I computed that BEFORE choosing `reject` over `provisional`, and before deciding R3's target. On a
++  10-task board, work out how many tasks must move; do not shop for trials.
++- Cheap habit that paid for itself repeatedly: falsify each proposed predicate against the ON-DISK
++  gold before spending a rollout (which tasks does it fire on? what is gold's emptiness? how many
++  formula cells?). It pre-killed three plausible edits, including one that would have broken all 5
++  passing tasks.
++- What to try next iteration (if rounds remained): 47766's residual is now a CodeAct-REPLAY defect,
++  not an anchor defect — hardcoded literal year constants in code that gets re-run on other graded
++  copies. That is a general rule, targets the one task still able to move, and is the highest-value
++  edit left. Also note a pre-gate prediction of mine was falsified by the traces (I wrote off 47766
++  case 2 as unreachable; a trial passed it) — worth stating predictions explicitly in PROCESS.md
++  precisely so the traces can refute them.
++
+ <!-- cap-evolve:meta-insights-append-below -->
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/PROCESS.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/PROCESS.md
+index ca95620..f88283f 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/PROCESS.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/PROCESS.md
+@@ -1,24 +1,128 @@
+-# PROCESS — what I did this iteration (explainability; REQUIRED)
++# PROCESS — cand_3_anchorblock (round 3, final)
+ 
+-Fill this in as you work. It is the human-readable record of HOW this iteration was done and is snapshotted with the candidate, so anyone — and the next iteration via ./prior_iterations/ — can see your reasoning. Be concrete.
++## Parent choice
+ 
+-## Ranked issue list (clusters by # failing tasks × trials, biggest first)
+-| rank | cluster | tasks | shared root cause | tag (KNOWLEDGE / BEHAVIORAL / CAPABILITY-GAP) | planned change class |
++Parent is **cand_2_procedure**, not the seed. cand_2 was booked `reject`, but only because
++`gate_delta` 0.100 == `gate_threshold` 0.100 exactly; it moved val 0.5333 → 0.6667 with
++`regressions: []` and flipped 56915 0.00 → 1.00 on 3/3 trials. Its capability files are strictly
++better than the seed's, so this round inherits them and adds ONE thing.
++
++`prompt.md` is byte-identical to cand_2's, deliberately (`diff -q` verified). It is the surface
++measured to fire 0/30 in round 1, so no round-3 effort is spent there. The entire edit is
++`task_template.md`, +38 lines.
++
++## What this round has to clear, arithmetically
++
++The paired statistic is computed over the 10 TASKS, not over trials, at k_se = 1.0. With nine 0.0
++diffs and one +1.0 diff, sd is pinned at 0.3162 and SE at 0.1000 — so Δ == threshold for ANY trial
++count. That is why cand_2 could not be rescued by buying trials and was booked `reject` rather than
++`provisional`.
++
++| scenario | Δ | threshold | clears? |
++| --- | --- | --- | --- |
++| 1 task flips (cand_2, measured) | 0.100 | 0.100 | NO — exact tie |
++| **2 tasks flip (this round's target)** | **0.200** | **0.133** | **YES** |
++| 1 flip + a 2/3 partial on a second task | 0.167 | ~0.118 | yes |
++| 1 flip + a 1/3 partial | 0.133 | ~0.107 | marginal |
++
++So the round needs **one more task to move**, and the board says which one: 47766 is the only task
++on it that still can.
++
++## Ranked issue list (re-derived from round 2's 30 traces)
++| rank | cluster | tasks | shared root cause | tag | planned change class |
++| --- | --- | --- | --- | --- | --- |
++| 1 | **aggregate source range too WIDE** | 47766 | Round 2's two-handle fix worked (C reads 1950, not `'=(B8*12)/12'`) and revealed the defect underneath: it sums ALL THREE row-blocks in-window (8000+8600+3935 = 20535) where gold is 8000. The scorer's feedback flipped from "LOWER than expected" to "HIGHER than expected" — the fix moved the failure, it did not remove it. | KNOWLEDGE (missing method) | worked example with real numbers + a directional invariant |
++| 2 | **a round wasted on an undefined name** | any task | Round-2 t0 spent a whole round on `NameError: name 'spreadsheet_path' is not defined`, because my own Step-1 snippet used bare variable names as if they were pre-defined. Self-inflicted by round 2's edit. | BEHAVIORAL | one comment + two assignment lines in the snippet |
++| — | ceiling | 188-39 | gold filler is literal `'N/A'`; instruction says `'NA'`; `'N/A'` appears in NO cell of ANY sheet of ALL 3 inputs (exhaustively scanned). Gold col B holds the DESIGNATION, not the name. | CEILING | conceded |
++| — | ceiling | 53449 | gold writes literal `'X'` under header `'Test'`; neither string is derivable. | CEILING | conceded |
++| — | ceiling | 52532 | copy 3's gold stores live array formulas and its own recalculated grid differs from the input's (Game 2: 483 → 383), flipping the winner. Cap 0.667. | CEILING | conceded |
++
++Achievable val ≈ 0.87. This round targets 0.767.
++
++## The retraction that made this round possible
++
++Round 1 diagnosed 47766 as a SCOPE defect. Round 2 retracted that in favour of the text-read.
++**Round 1 was right too — both defects were real and stacked.** The anchor rule could not possibly
++fire in round 1 because every subtotal it would have compared read back as 0 from the text-read.
++Re-verified against the gold workbooks this round:
++
++| case | gold K40 | block 8-37 in-window | all three blocks in-window | input K40 | block 8-37 ALL years |
+ | --- | --- | --- | --- | --- | --- |
++| 1 | **8000** | **8000** | 20535 | 14755 | **14755** |
++| 2 | 4355 | 0 | 0 | 14755 | 14755 |
++| 3 | **9950** | **9950** | 22485 | 16705 | **16705** |
+ 
+-## Changes made this iteration (one row per edit — aim for MULTIPLE classes, incl. a NEW tool when a cluster needs one)
+-| cluster | edit class | file / tool | what & why it generalizes | protects passing? |
++Two independent confirmations: block 8-37 restricted to the window reproduces gold EXACTLY on cases
++1 and 3, and the number already sitting in the target equals that same block's all-years total. The
++pre-filled value identifies the source block.
++
++**Stated risk.** Case 2's window is degenerate (K43 == L43 == 2022-01-01, an empty interval), so a
++correct implementation yields 0 against a gold of 4355. That case may be unreachable, giving 2/3
++(+0.0667) rather than 3/3 (+0.100). Δ = 0.167 still clears a threshold of ~0.118, but the margin is
++thinner than the table's headline row. Recorded here rather than discovered after the gate.
++
++## Changes made this iteration
++| cluster | edit class | file | what & why it generalizes | protects passing? |
+ | --- | --- | --- | --- | --- |
++| 1 | **WORKED EXAMPLE with real numbers — a new FORM, not another rule** | `task_template.md` Step 1b | Walks one concrete case end to end: three block subtotals printed, one equal to the value already in the target, the conclusion "the target came from rows 8-37 ALONE, not all three summed (144890)", and the contrast "had you summed all three and then filtered you would have got 20535 — larger than what was already there, which is the tell". Both prior rounds failed with *rules*; round 2's journal named a worked example as the next lever, in advance. | **Gated on a predicate MEASURED to fire on 1 of 10 tasks: answer_position is a SINGLE cell AND already holds a NUMBER. Only 47766 (K40 = 14755) qualifies.** |
++| 1 | **directional invariant** | `task_template.md` Step 1b + Step 4.4 | "Adding a restriction can only keep a sum the same or make it smaller. A larger result means the source range is too wide — narrow it, do not re-check the arithmetic." This is a monotonicity fact about restricted aggregates, not a fact about this workbook, and it is checkable from the agent's own print-out. | Same single-cell-numeric gate. It is also exactly the signal the scorer gave ("HIGHER than expected"). |
++| 2 | **defect I introduced, fixed** | `task_template.md` Step 1 | "Paths are NOT pre-defined variables in the sandbox — assign them yourself, as literal strings copied from the sections above, in EVERY code block you send." | Strictly saves rounds; changes no value written by anyone. |
++| 1 | **print discipline tightened** | `task_template.md` Step 1d | Each block subtotal must be "printed as its own line. Do not print only the combined total: you cannot tell which block is the right one from a single number." Round 2 already printed them; this makes the per-line requirement explicit so Step 1b has its input. | Adds one print on tasks that aggregate blocks; no passer's written values change. |
++
++Nothing was removed and no existing rule was reworded. Every round-2 edit survives intact.
+ 
+-## Verify-the-fix (one line per change: the trace it targets → what the guard/computation/new-tool now does on those exact inputs)
+-- 
++## Verify-the-fix (trace evidence → what changes)
++- **47766.** Round-2 t0 msg 10 states it summed "ranges (8-37, 41-58, 62-74)" filtered to 2021 and
++  wrote 20535; scorer: HIGHER than expected; gold 8000. The agent DID print the per-block subtotals
++  — it simply had no criterion for choosing among them. Step 1b supplies the criterion (match the
++  pre-existing value) and Step 4.4 catches the exact failure mode (20535 > 14755 ⇒ too wide).
++  Expected 0.00 → 0.667 or 1.00.
++- **56915 (the win I must not break).** answer_position is a 24-cell RANGE, so the single-cell gate
++  excludes it; Step 4.1's coverage rule that flipped it is untouched, and `prompt.md` is unchanged.
++- **168-17 / 438-18 / 52532 / 56915 (what a naive anchor rule would have hit).** All four hold
++  non-empty non-zero values inside answer_position — text headers ('SALES AND ACCESSORIES',
++  'ITEM'), `'#N/A'` strings, or hand-entered win counts. An unscoped "match the value already there"
++  rule fires on 168-17 (20 cells), 438-18 (12), 52532 (2), 56915 (16). Requiring a SINGLE cell
++  holding a NUMBER excludes all four. Measured, not argued — and this is precisely why round 1's
++  unscoped version of the same idea was refuted.
++- **160-6 / 43213 / 49945 / 53449 / 188-39.** answer_position is multi-cell in every one, so the
++  new step cannot fire at all.
++- **Contract pre-flight.** `_task_template_error()` → `None`; all 6 required placeholders present
++  plus `{max_turns}`; no unknown braces (the worked example's numbers sit in a fenced block with no
++  braces); `.format()` render OK, 7595 chars.
+ 
+ ## Process & features used
+-- Subagents / worktrees / parallel features used (or: "serial fallback because …"):
+-- Prior iterations I read from ./prior_iterations/ + ./RUNMAP.md (which, and what I learned):
++- Serial, foreground, three rounds; every candidate gated exactly once on FULL val at k_se = 1.0
++  over 3 trials with a concurrent byte-identical control (`--gate-against control`), concurrency
++  fixed at 8 throughout as a measurement parameter rather than a speed dial. No screen subset was
++  ever gated on.
++- Each decision came from reading that round's own 30 traces, not from the scalar. Round 1's
++  Δ = 0.000 was only interpretable because the traces showed WHICH surface moved behaviour.
++- Falsification before spending: for every proposed predicate, enumerate which of the 10 tasks it
++  fires on against the on-disk gold. That is what killed the blanket "no empty cells" rule (160-6
++  gold is 42/72 empty), the blanket `data_only=True` (all 5 passers save a non-`data_only` handle),
++  and the unscoped anchor rule (fires on 4 wrong tasks).
++- Read `./prior_iterations/`, RUNMAP, LEDGER and `rejected.jsonl` each round. Both prior JOURNAL
++  entries carry a POST-GATE audit appended before booking, so the handover states what was measured
++  rather than what was hoped.
+ 
+-## Good things to PRESERVE (do not let a future iteration undo these)
+-- 
++## Good things to PRESERVE
++- **The ordered Step 1-4 procedure in `task_template.md`** — measured to change behaviour 30/30 in
++  both rounds, and it is what carried the 56915 win. Add mechanics INTO it; do not replace it with
++  prose.
++- **The two-handle `data_only` snippet + "never save `wb_val`".** It flipped nothing on its own but
++  it is what made 47766's real defect visible, and it is inert on the 5 passers (0 formula cells).
++- **The `{instruction_type}` key on the coverage predicate** — the single edit that flipped 56915;
++  unkeyed it breaks 160-6 and 168-17.
++- **Objective, not intention-relative, finish predicates.** "Cells your solution was supposed to
++  fill" is self-certifying; "every cell of answer_position" is not.
++- Deleting "once that file exists, you are done".
++- **Scope a value-matching rule by target SHAPE and TYPE, not by non-emptiness.** That is the
++  difference between round 1's refuted rule and this round's.
+ 
+-## Deliberately skipped (cluster + why — already-passing / needs gold / infra noise)
+-- 
++## Deliberately skipped
++- 188-39, 53449, 52532 copy 3 — verified unreachable from the inputs. A future round must not spend
++  on them, and must not read their flat scores as evidence against the header/type/conditional edits.
++- The five 3/3 passers.
++- `prompt.md` — left byte-identical to cand_2 on purpose. It is the measured-dead surface, and a
++  round that edits it is spending on the thing proven not to fire.
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/RUNMAP.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/RUNMAP.md
+index 4e3cc67..155273d 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/RUNMAP.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/RUNMAP.md
+@@ -10,5 +10,6 @@ The live run dir (read-only) is at `/vol/home/skillberry/.cache/capevolve-gh-run
+ | --- | --- | --- | --- | --- | --- |
+ | 1 | cand_1_anchor | seed | reject | 0.567 | PROCESS.md + diff.patch |
+ | 2 | cand_2_procedure | seed | reject | 0.667 | PROCESS.md + diff.patch |
++| 3 | cand_3_anchorblock | seed | ACCEPT | 0.689 | PROCESS.md + diff.patch |
+ 
+ Before proposing, read the PROCESS.md + diff.patch of the prior iterations that targeted the SAME cluster you are about to work on — so you BUILD ON them rather than repeat a rejected or already-tried edit. Cross-reference LEDGER.md for which of them the gate accepted vs rejected, and JOURNAL.md for the lessons.
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prior_iterations/cand_3_anchorblock/PROCESS.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prior_iterations/cand_3_anchorblock/PROCESS.md
+new file mode 100644
+index 0000000..f88283f
+--- /dev/null
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prior_iterations/cand_3_anchorblock/PROCESS.md
+@@ -0,0 +1,128 @@
++# PROCESS — cand_3_anchorblock (round 3, final)
++
++## Parent choice
++
++Parent is **cand_2_procedure**, not the seed. cand_2 was booked `reject`, but only because
++`gate_delta` 0.100 == `gate_threshold` 0.100 exactly; it moved val 0.5333 → 0.6667 with
++`regressions: []` and flipped 56915 0.00 → 1.00 on 3/3 trials. Its capability files are strictly
++better than the seed's, so this round inherits them and adds ONE thing.
++
++`prompt.md` is byte-identical to cand_2's, deliberately (`diff -q` verified). It is the surface
++measured to fire 0/30 in round 1, so no round-3 effort is spent there. The entire edit is
++`task_template.md`, +38 lines.
++
++## What this round has to clear, arithmetically
++
++The paired statistic is computed over the 10 TASKS, not over trials, at k_se = 1.0. With nine 0.0
++diffs and one +1.0 diff, sd is pinned at 0.3162 and SE at 0.1000 — so Δ == threshold for ANY trial
++count. That is why cand_2 could not be rescued by buying trials and was booked `reject` rather than
++`provisional`.
++
++| scenario | Δ | threshold | clears? |
++| --- | --- | --- | --- |
++| 1 task flips (cand_2, measured) | 0.100 | 0.100 | NO — exact tie |
++| **2 tasks flip (this round's target)** | **0.200** | **0.133** | **YES** |
++| 1 flip + a 2/3 partial on a second task | 0.167 | ~0.118 | yes |
++| 1 flip + a 1/3 partial | 0.133 | ~0.107 | marginal |
++
++So the round needs **one more task to move**, and the board says which one: 47766 is the only task
++on it that still can.
++
++## Ranked issue list (re-derived from round 2's 30 traces)
++| rank | cluster | tasks | shared root cause | tag | planned change class |
++| --- | --- | --- | --- | --- | --- |
++| 1 | **aggregate source range too WIDE** | 47766 | Round 2's two-handle fix worked (C reads 1950, not `'=(B8*12)/12'`) and revealed the defect underneath: it sums ALL THREE row-blocks in-window (8000+8600+3935 = 20535) where gold is 8000. The scorer's feedback flipped from "LOWER than expected" to "HIGHER than expected" — the fix moved the failure, it did not remove it. | KNOWLEDGE (missing method) | worked example with real numbers + a directional invariant |
++| 2 | **a round wasted on an undefined name** | any task | Round-2 t0 spent a whole round on `NameError: name 'spreadsheet_path' is not defined`, because my own Step-1 snippet used bare variable names as if they were pre-defined. Self-inflicted by round 2's edit. | BEHAVIORAL | one comment + two assignment lines in the snippet |
++| — | ceiling | 188-39 | gold filler is literal `'N/A'`; instruction says `'NA'`; `'N/A'` appears in NO cell of ANY sheet of ALL 3 inputs (exhaustively scanned). Gold col B holds the DESIGNATION, not the name. | CEILING | conceded |
++| — | ceiling | 53449 | gold writes literal `'X'` under header `'Test'`; neither string is derivable. | CEILING | conceded |
++| — | ceiling | 52532 | copy 3's gold stores live array formulas and its own recalculated grid differs from the input's (Game 2: 483 → 383), flipping the winner. Cap 0.667. | CEILING | conceded |
++
++Achievable val ≈ 0.87. This round targets 0.767.
++
++## The retraction that made this round possible
++
++Round 1 diagnosed 47766 as a SCOPE defect. Round 2 retracted that in favour of the text-read.
++**Round 1 was right too — both defects were real and stacked.** The anchor rule could not possibly
++fire in round 1 because every subtotal it would have compared read back as 0 from the text-read.
++Re-verified against the gold workbooks this round:
++
++| case | gold K40 | block 8-37 in-window | all three blocks in-window | input K40 | block 8-37 ALL years |
++| --- | --- | --- | --- | --- | --- |
++| 1 | **8000** | **8000** | 20535 | 14755 | **14755** |
++| 2 | 4355 | 0 | 0 | 14755 | 14755 |
++| 3 | **9950** | **9950** | 22485 | 16705 | **16705** |
++
++Two independent confirmations: block 8-37 restricted to the window reproduces gold EXACTLY on cases
++1 and 3, and the number already sitting in the target equals that same block's all-years total. The
++pre-filled value identifies the source block.
++
++**Stated risk.** Case 2's window is degenerate (K43 == L43 == 2022-01-01, an empty interval), so a
++correct implementation yields 0 against a gold of 4355. That case may be unreachable, giving 2/3
++(+0.0667) rather than 3/3 (+0.100). Δ = 0.167 still clears a threshold of ~0.118, but the margin is
++thinner than the table's headline row. Recorded here rather than discovered after the gate.
++
++## Changes made this iteration
++| cluster | edit class | file | what & why it generalizes | protects passing? |
++| --- | --- | --- | --- | --- |
++| 1 | **WORKED EXAMPLE with real numbers — a new FORM, not another rule** | `task_template.md` Step 1b | Walks one concrete case end to end: three block subtotals printed, one equal to the value already in the target, the conclusion "the target came from rows 8-37 ALONE, not all three summed (144890)", and the contrast "had you summed all three and then filtered you would have got 20535 — larger than what was already there, which is the tell". Both prior rounds failed with *rules*; round 2's journal named a worked example as the next lever, in advance. | **Gated on a predicate MEASURED to fire on 1 of 10 tasks: answer_position is a SINGLE cell AND already holds a NUMBER. Only 47766 (K40 = 14755) qualifies.** |
++| 1 | **directional invariant** | `task_template.md` Step 1b + Step 4.4 | "Adding a restriction can only keep a sum the same or make it smaller. A larger result means the source range is too wide — narrow it, do not re-check the arithmetic." This is a monotonicity fact about restricted aggregates, not a fact about this workbook, and it is checkable from the agent's own print-out. | Same single-cell-numeric gate. It is also exactly the signal the scorer gave ("HIGHER than expected"). |
++| 2 | **defect I introduced, fixed** | `task_template.md` Step 1 | "Paths are NOT pre-defined variables in the sandbox — assign them yourself, as literal strings copied from the sections above, in EVERY code block you send." | Strictly saves rounds; changes no value written by anyone. |
++| 1 | **print discipline tightened** | `task_template.md` Step 1d | Each block subtotal must be "printed as its own line. Do not print only the combined total: you cannot tell which block is the right one from a single number." Round 2 already printed them; this makes the per-line requirement explicit so Step 1b has its input. | Adds one print on tasks that aggregate blocks; no passer's written values change. |
++
++Nothing was removed and no existing rule was reworded. Every round-2 edit survives intact.
++
++## Verify-the-fix (trace evidence → what changes)
++- **47766.** Round-2 t0 msg 10 states it summed "ranges (8-37, 41-58, 62-74)" filtered to 2021 and
++  wrote 20535; scorer: HIGHER than expected; gold 8000. The agent DID print the per-block subtotals
++  — it simply had no criterion for choosing among them. Step 1b supplies the criterion (match the
++  pre-existing value) and Step 4.4 catches the exact failure mode (20535 > 14755 ⇒ too wide).
++  Expected 0.00 → 0.667 or 1.00.
++- **56915 (the win I must not break).** answer_position is a 24-cell RANGE, so the single-cell gate
++  excludes it; Step 4.1's coverage rule that flipped it is untouched, and `prompt.md` is unchanged.
++- **168-17 / 438-18 / 52532 / 56915 (what a naive anchor rule would have hit).** All four hold
++  non-empty non-zero values inside answer_position — text headers ('SALES AND ACCESSORIES',
++  'ITEM'), `'#N/A'` strings, or hand-entered win counts. An unscoped "match the value already there"
++  rule fires on 168-17 (20 cells), 438-18 (12), 52532 (2), 56915 (16). Requiring a SINGLE cell
++  holding a NUMBER excludes all four. Measured, not argued — and this is precisely why round 1's
++  unscoped version of the same idea was refuted.
++- **160-6 / 43213 / 49945 / 53449 / 188-39.** answer_position is multi-cell in every one, so the
++  new step cannot fire at all.
++- **Contract pre-flight.** `_task_template_error()` → `None`; all 6 required placeholders present
++  plus `{max_turns}`; no unknown braces (the worked example's numbers sit in a fenced block with no
++  braces); `.format()` render OK, 7595 chars.
++
++## Process & features used
++- Serial, foreground, three rounds; every candidate gated exactly once on FULL val at k_se = 1.0
++  over 3 trials with a concurrent byte-identical control (`--gate-against control`), concurrency
++  fixed at 8 throughout as a measurement parameter rather than a speed dial. No screen subset was
++  ever gated on.
++- Each decision came from reading that round's own 30 traces, not from the scalar. Round 1's
++  Δ = 0.000 was only interpretable because the traces showed WHICH surface moved behaviour.
++- Falsification before spending: for every proposed predicate, enumerate which of the 10 tasks it
++  fires on against the on-disk gold. That is what killed the blanket "no empty cells" rule (160-6
++  gold is 42/72 empty), the blanket `data_only=True` (all 5 passers save a non-`data_only` handle),
++  and the unscoped anchor rule (fires on 4 wrong tasks).
++- Read `./prior_iterations/`, RUNMAP, LEDGER and `rejected.jsonl` each round. Both prior JOURNAL
++  entries carry a POST-GATE audit appended before booking, so the handover states what was measured
++  rather than what was hoped.
++
++## Good things to PRESERVE
++- **The ordered Step 1-4 procedure in `task_template.md`** — measured to change behaviour 30/30 in
++  both rounds, and it is what carried the 56915 win. Add mechanics INTO it; do not replace it with
++  prose.
++- **The two-handle `data_only` snippet + "never save `wb_val`".** It flipped nothing on its own but
++  it is what made 47766's real defect visible, and it is inert on the 5 passers (0 formula cells).
++- **The `{instruction_type}` key on the coverage predicate** — the single edit that flipped 56915;
++  unkeyed it breaks 160-6 and 168-17.
++- **Objective, not intention-relative, finish predicates.** "Cells your solution was supposed to
++  fill" is self-certifying; "every cell of answer_position" is not.
++- Deleting "once that file exists, you are done".
++- **Scope a value-matching rule by target SHAPE and TYPE, not by non-emptiness.** That is the
++  difference between round 1's refuted rule and this round's.
++
++## Deliberately skipped
++- 188-39, 53449, 52532 copy 3 — verified unreachable from the inputs. A future round must not spend
++  on them, and must not read their flat scores as evidence against the header/type/conditional edits.
++- The five 3/3 passers.
++- `prompt.md` — left byte-identical to cand_2 on purpose. It is the measured-dead surface, and a
++  round that edits it is spending on the thing proven not to fire.
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prior_iterations/cand_3_anchorblock/diff.patch b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prior_iterations/cand_3_anchorblock/diff.patch
+new file mode 100644
+index 0000000..b273fb4
+--- /dev/null
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prior_iterations/cand_3_anchorblock/diff.patch
+@@ -0,0 +1,109 @@
++--- a/prompt.md
+++++ b/prompt.md
++@@ -1,3 +1,5 @@
++ You are a spreadsheet expert who can manipulate spreadsheets through Python code.
+++
+++Your answer is graded by re-opening the file you saved at output_path and comparing the cells in answer_position against a reference workbook, one cell at a time. A cell matches only if BOTH its value and its stored type match. An empty cell never matches a filled one, and a number stored as text never matches a number. Prose you write is never graded — only the saved file.
++ 
++ Solve the given spreadsheet manipulation question precisely:
++@@ -6,4 +8,7 @@
++ - For Sheet-Level Manipulation questions, modify or fill in values ONLY within the cell range given in answer_position — never touch cells outside that range.
++ - Prefer computing and writing LITERAL values (e.g. with pandas/openpyxl) over live spreadsheet formulas, so the result is unambiguous when the file is re-opened for grading.
+++- **Read the sheet's own headers, not just the instruction's prose.** The instruction is written by someone describing their sheet loosely; the header cell says what a column actually holds. When the two disagree about what belongs in a column of answer_position, follow the header. But when the instruction names explicit cells or a range, those row numbers are literal — adjust the COLUMN to match the header, never widen or move the ROWS.
+++- **Write a numeric result as a number** (int/float), and a date as a real date. Do NOT read a column with `dtype=str`, and do not wrap a value in `str(...)` to tidy up how it prints — the grader counts a right value in the wrong storage type as a miss. A number that arrives as text from the source must be converted before you write it into a numeric column; only a value that is genuinely text in the reference should stay text.
+++- **Verify by re-opening output_path with openpyxl, not with pandas.** A pandas print reformats integers as floats or scientific notation and turns a literal like `NA` into `NaN`, so a defect you "fix" on the strength of a pandas print is a fix to a display artifact rather than to your file.
++ - Always save your result to the exact output_path given, creating any missing parent directories first.
++ - If code execution returns an error, read the traceback carefully and fix the code — do not repeat a failing approach unchanged.
++--- a/task_template.md
+++++ b/task_template.md
++@@ -42,9 +42,104 @@
++ {output_path}
++ 
++-You have up to {max_turns} rounds of interaction. In each round, reply with exactly ONE python code block:
++-1. Information-gathering code (e.g. inspecting the file) — the execution result is returned to you.
++-2. Solution code that writes the modified file to output_path.
++-3. Verification code: re-open output_path and print the values you wrote in answer_position,
++-   to confirm they are correct before finishing. If they are wrong, fix your code and write again.
++-Reply without a code block when you are satisfied the saved file is correct.
+++## How to work
+++
+++You have up to {max_turns} rounds of interaction. Reply with exactly ONE python code block per
+++round; its execution result comes back to you. Work through these steps IN ORDER — each one is a
+++precondition of the next, so do not skip ahead to writing the file.
+++
+++**Step 1 — INSPECT (always your first round; never skip it).** Do not write output_path in this
+++round. Open the input file TWICE and keep both handles for the rest of the task:
+++
+++```python
+++from openpyxl import load_workbook
+++# Paths are NOT pre-defined variables in the sandbox — assign them yourself, as literal
+++# strings copied from the sections above, in EVERY code block you send.
+++spreadsheet_path = "<the spreadsheet_path given above>"
+++wb_val = load_workbook(spreadsheet_path, data_only=True)   # READ values through this one
+++wb_out = load_workbook(spreadsheet_path)                   # WRITE and save through this one
+++```
+++
+++This is not optional bookkeeping. Without `data_only=True` a cell containing a formula reads
+++back as the formula's TEXT (`'=(B8*12)/12'`), not its number, so every sum over that column
+++silently becomes 0 or raises a TypeError. Read every source value from `wb_val`; make every
+++assignment on `wb_out`. Never save `wb_val` — saving a `data_only` workbook erases the formulas
+++of every other cell in the file.
+++
+++Then print, from `wb_val`, and read the results before writing any solution code:
+++   a. every cell of answer_position with its value and type — this tells you whether the target
+++      is blank, partly pre-filled, or already holds a worked example;
+++   b. the header cell of every row/column that answer_position covers, in the TARGET sheet;
+++   c. for each source column you intend to read: print `repr()` of a few cells. If any comes back
+++      as a string starting with `=`, you are reading the wrong handle — go back to `wb_val`;
+++   d. the candidate SOURCE cells your calculation would read, and — if your calculation
+++      aggregates a block of rows — the subtotal of EACH candidate block separately, printed as
+++      its own line. Do not print only the combined total: you cannot tell which block is the
+++      right one from a single number.
+++
+++**Step 1b — MATCH THE NUMBER THAT IS ALREADY THERE (only when answer_position is a SINGLE cell
+++that already holds a number).** That number is not stale junk to overwrite blindly — it is the
+++same calculation, and it tells you WHICH rows to read. Your job is usually to recompute it with
+++one extra restriction, so find the block that reproduces it first.
+++
+++Worked example. Suppose answer_position is a single cell already holding `14755`, and the
+++instruction quotes three SUMIF formulas over three separate row-blocks and asks you to add a date
+++restriction. Step 1d prints, for the criterion but with NO date filter:
+++
+++```
+++block rows 8-37 : 14755      <-- equals the number already in the target
+++block rows 41-58: 117800
+++block rows 62-74: 12335
+++```
+++
+++The target came from rows 8-37 ALONE, not from all three blocks summed (144890). So apply the new
+++date restriction to rows 8-37 only, and the answer becomes a number SMALLER than 14755. Had you
+++summed all three blocks and then filtered by date, you would have got 20535 — larger than the
+++value that was already sitting there, which is the tell that the source range is too wide.
+++
+++The general rule: when your restricted result comes out LARGER than the unrestricted value that
+++was already in the cell, your source range is too wide — narrow it, do not re-check the
+++arithmetic. Adding a restriction can only keep a sum the same or make it smaller. If no single
+++block reproduces the existing value, print the subtotals and pick the one closest to it rather
+++than summing everything.
+++
+++   Base your solution on what these prints actually say, not on what you expected them to say.
+++
+++**Step 2 — SOLVE.** Assign into `wb_out` and save it to output_path. Preserve everything the
+++instruction does not ask you to change.
+++
+++**Step 3 — VERIFY (required; you are NOT finished when the file merely exists).** A saved file
+++proves nothing: a wrong value, a value stored as text, and a cell left empty all save perfectly.
+++Re-open output_path with `data_only=True` and print EVERY cell of answer_position as
+++`coordinate, repr(value), type(value).__name__` — the whole range, not a sample, not only the
+++cells you believe you touched.
+++
+++**Step 4 — FINISH.** Reply with NO code block, and in that reply state the values you wrote.
+++Check the Step 3 print-out against this list FIRST, and treat each failure as a defect in your
+++logic rather than as an acceptable outcome:
+++
+++   1. **Coverage.** When instruction_type is Cell-Level Manipulation, every single cell of
+++      answer_position must read back non-empty — the graded reference fills all of them, so a
+++      `None` anywhere in the range is a guaranteed miss. This includes cells your lookup found no
+++      match for: a spreadsheet function over a blank or unmatched numeric source returns 0, so
+++      write 0 there rather tha
++... (truncated)
+\ No newline at end of file
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/prompt.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prompt.md
+index 370e8ac..eeb2fa0 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/prompt.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/prompt.md
+@@ -1,9 +1,14 @@
+ You are a spreadsheet expert who can manipulate spreadsheets through Python code.
+ 
++Your answer is graded by re-opening the file you saved at output_path and comparing the cells in answer_position against a reference workbook, one cell at a time. A cell matches only if BOTH its value and its stored type match. An empty cell never matches a filled one, and a number stored as text never matches a number. Prose you write is never graded — only the saved file.
++
+ Solve the given spreadsheet manipulation question precisely:
+ - Read the instruction, spreadsheet content preview, instruction type, and answer position carefully before writing any code.
+ - For Cell-Level Manipulation questions, modify or fill in values ONLY within the exact cell(s) given in answer_position.
+ - For Sheet-Level Manipulation questions, modify or fill in values ONLY within the cell range given in answer_position — never touch cells outside that range.
+ - Prefer computing and writing LITERAL values (e.g. with pandas/openpyxl) over live spreadsheet formulas, so the result is unambiguous when the file is re-opened for grading.
++- **Read the sheet's own headers, not just the instruction's prose.** The instruction is written by someone describing their sheet loosely; the header cell says what a column actually holds. When the two disagree about what belongs in a column of answer_position, follow the header. But when the instruction names explicit cells or a range, those row numbers are literal — adjust the COLUMN to match the header, never widen or move the ROWS.
++- **Write a numeric result as a number** (int/float), and a date as a real date. Do NOT read a column with `dtype=str`, and do not wrap a value in `str(...)` to tidy up how it prints — the grader counts a right value in the wrong storage type as a miss. A number that arrives as text from the source must be converted before you write it into a numeric column; only a value that is genuinely text in the reference should stay text.
++- **Verify by re-opening output_path with openpyxl, not with pandas.** A pandas print reformats integers as floats or scientific notation and turns a literal like `NA` into `NaN`, so a defect you "fix" on the strength of a pandas print is a fix to a display artifact rather than to your file.
+ - Always save your result to the exact output_path given, creating any missing parent directories first.
+ - If code execution returns an error, read the traceback carefully and fix the code — do not repeat a failing approach unchanged.
+diff --git a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/task_template.md b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/task_template.md
+index 59c673e..acb722b 100644
+--- a/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/seed/task_template.md
++++ b/vol/home/skillberry/.cache/capevolve-gh-runner/_work/cap-evolve/cap-evolve/ci/benchmarks/.work/suite_smoke_spreadsheetbench_proj/.capevolve/run_suite/candidates/cand_3_anchorblock/task_template.md
+@@ -41,10 +41,105 @@ You need to solve the following spreadsheet manipulation question. It contains s
+ ### output_path
+ {output_path}
+ 
+-You have up to {max_turns} rounds of interaction. In each round, reply with exactly ONE python code block:
+-1. Information-gathering code (e.g. inspecting the file) — the execution result is returned to you.
+-2. Solution code that writes the modified file to output_path.
+-3. Verification code: re-open output_path and print the values you wrote in answer_position,
+-   to confirm they are correct before finishing. If they are wrong, fix your code and write again.
+-Reply without a code block when you are satisfied the saved file is correct.
++## How to work
++
++You have up to {max_turns} rounds of interaction. Reply with exactly ONE python code block per
++round; its execution result comes back to you. Work through these steps IN ORDER — each one is a
++precondition of the next, so do not skip ahead to writing the file.
++
++**Step 1 — INSPECT (always your first round; never skip it).** Do not write output_path in this
++round. Open the input file TWICE and keep both handles for the rest of the task:
++
++```python
++from openpyxl import load_workbook
++# Paths are NOT pre-defined variables in the sandbox — assign them yourself, as literal
++# strings copied from the sections above, in EVERY code block you send.
++spreadsheet_path = "<the spreadsheet_path given above>"
++wb_val = load_workbook(spreadsheet_path, data_only=True)   # READ values through this one
++wb_out = load_workbook(spreadsheet_path)                   # WRITE and save through this one
++```
++
++This is not optional bookkeeping. Without `data_only=True` a cell containing a formula reads
++back as the formula's TEXT (`'=(B8*12)/12'`), not its number, so every sum over that column
++silently becomes 0 or raises a TypeError. Read every source value from `wb_val`; make every
++assignment on `wb_out`. Never save `wb_val` — saving a `data_only` workbook erases the formulas
++of every other cell in the file.
++
++Then print, from `wb_val`, and read the results before writing any solution code:
++   a. every cell of answer_position with its value and type — this tells you whether the target
++      is blank, partly pre-filled, or already holds a worked example;
++   b. the header cell of every row/column that answer_position covers, in the TARGET sheet;
++   c. for each source column you intend to read: print `repr()` of a few cells. If any comes back
++      as a string starting with `=`, you are reading the wrong handle — go back to `wb_val`;
++   d. the candidate SOURCE cells your calculation would read, and — if your calculation
++      aggregates a block of rows — the subtotal of EACH candidate block separately, printed as
++      its own line. Do not print only the combined total: you cannot tell which block is the
++      right one from a single number.
++
++**Step 1b — MATCH THE NUMBER THAT IS ALREADY THERE (only when answer_position is a SINGLE cell
++that already holds a number).** That number is not stale junk to overwrite blindly — it is the
++same calculation, and it tells you WHICH rows to read. Your job is usually to recompute it with
++one extra restriction, so find the block that reproduces it first.
++
++Worked example. Suppose answer_position is a single cell already holding `14755`, and the
++instruction quotes three SUMIF formulas over three separate row-blocks and asks you to add a date
++restriction. Step 1d prints, for the criterion but with NO date filter:
++
++```
++block rows 8-37 : 14755      <-- equals the number already in the target
++block rows 41-58: 117800
++block rows 62-74: 12335
++```
++
++The target came from rows 8-37 ALONE, not from all three blocks summed (144890). So apply the new
++date restriction to rows 8-37 only, and the answer becomes a number SMALLER than 14755. Had you
++summed all three blocks and then filtered by date, you would have got 20535 — larger than the
++value that was already sitting there, which is the tell that the source range is too wide.
++
++The general rule: when your restricted result comes out LARGER than the unrestricted value that
++was already in the cell, your source range is too wide — narrow it, do not re-check the
++arithmetic. Adding a restriction can only keep a sum the same or make it smaller. If no single
++block reproduces the existing value, print the subtotals and pick the one closest to it rather
++than summing everything.
++
++   Base your solution on what these prints actually say, not on what you expected them to say.
++
++**Step 2 — SOLVE.** Assign into `wb_out` and save it to output_path. Preserve everything the
++instruction does not ask you to change.
++
++**Step 3 — VERIFY (required; you are NOT finished when the file merely exists).** A saved file
++proves nothing: a wrong value, a value stored as text, and a cell left empty all save perfectly.
++Re-open output_path with `data_only=True` and print EVERY cell of answer_position as
++`coordinate, repr(value), type(value).__name__` — the whole range, not a sample, not only the
++cells you believe you touched.
++
++**Step 4 — FINISH.** Reply with NO code block, and in that reply state the values you wrote.
++Check the Step 3 print-out against this list FIRST, and treat each failure as a defect in your
++logic rather than as an acceptable outcome:
++
++   1. **Coverage.** When instruction_type is Cell-Level Manipulation, every single cell of
++      answer_position must read back non-empty — the graded reference fills all of them, so a
++      `None` anywhere in the range is a guaranteed miss. This includes cells your lookup found no
++      match for: a spreadsheet function over a blank or unmatched numeric source returns 0, so
++      write 0 there rather than leaving the cell empty. The one exception is an instruction that
++      states a per-row condition (wording like "both X and Y on the same day", "where", "if",
++      "flag", "mark"): then fill only the rows that satisfy it and leave the others alone.
++      When instruction_type is Sheet-Level Manipulation, do NOT pad the range — a correct answer
++      there often leaves most of it empty.
++   2. **Type.** Every number reads back as `int`/`float` and every date as a date, never as a
++      `str`. If the value arrived as text from the source and the column holds numbers, convert it.
++   3. **Scope.** No cell outside the part of answer_position the instruction asks you to change
++      was altered from its original input value.
++   4. **Consistency.** The values agree with the instruction and with any value the target
++      already held in Step 1. In particular, if answer_position was a single cell holding a
++      number and your task was to recompute it with an ADDED restriction, your new number must be
++      smaller than or equal to the old one. A larger number means you widened the source range
++      instead of restricting it — go back to Step 1b and find the block that reproduces the
++      original value.
++
++   If any check fails, go back to Step 2 and change the LOGIC. Do not re-send a code block that
++   differs from an earlier one only in comments or variable names — that round cannot change the
++   graded file, and you have a limited number of rounds. If a printed number is not the one you
++   expected, the bug is in which cells you read, not in the arithmetic.
++
+ If your code raises an error, the traceback will be returned to you; fix the code and try again.

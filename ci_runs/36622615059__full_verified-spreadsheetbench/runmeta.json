@@ -1,0 +1,21 @@
+{
+  "run_id": 36622615059,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/36622615059",
+  "bench": "spreadsheetbench",
+  "tier": "full_verified",
+  "event": "workflow_dispatch",
+  "source": "manual (run/opt-no-recalc-2)",
+  "pr": null,
+  "branch": "run/opt-no-recalc-2",
+  "sha": "2aaea3d8ad4ace4dce779fee8c10133e49186f96",
+  "date": "2026-09-30T02:54:07Z",
+  "iterations": 5,
+  "trials": 1,
+  "agent_model": "ibm-rits/google/gemma-4-31B-it",
+  "optimizer_model": "ibm-ete-int/aws/claude-opus-5",
+  "gate_k_se": 0.2,
+  "algorithm": "hill-climb-all",
+  "warm_seed": false,
+  "reward_metric": "hard_no_recalc",
+  "conclusion": "success"
+}

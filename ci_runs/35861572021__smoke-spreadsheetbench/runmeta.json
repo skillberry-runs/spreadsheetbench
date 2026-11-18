@@ -1,0 +1,20 @@
+{
+  "run_id": 35861572021,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/35861572021",
+  "bench": "spreadsheetbench",
+  "tier": "smoke",
+  "event": "workflow_dispatch",
+  "source": "manual (ci-rits-provider-support)",
+  "pr": null,
+  "branch": "ci-rits-provider-support",
+  "sha": "ba211ab1bd3073b88411cff87ca5b9242a6b6099",
+  "date": "2026-09-23T16:51:20Z",
+  "iterations": 3,
+  "trials": 3,
+  "agent_model": "rits/google/gemma-4-31B-it",
+  "optimizer_model": "aws/claude-opus-5",
+  "gate_k_se": 1.0,
+  "algorithm": "agent-optimize",
+  "warm_seed": false,
+  "conclusion": "success"
+}

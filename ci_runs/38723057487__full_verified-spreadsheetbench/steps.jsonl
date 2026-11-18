@@ -1,0 +1,8 @@
+{"phase": "baseline", "iter": null, "candidate": "seed", "accepted": null, "reward": 0.35, "optimizer_usd": 0.0, "optimizer_seconds": 0.0, "eval_usd": 0.0, "eval_seconds": 1955.0}
+{"phase": "iterate", "iter": 1, "candidate": "cand_0001", "accepted": true, "reward": 0.725, "optimizer_usd": 2.31781, "optimizer_seconds": 165.55, "eval_usd": 0.0, "eval_seconds": 3222.49, "n_broke": 2, "n_fixed": 17}
+{"phase": "iterate", "iter": 2, "candidate": "cand_0002", "accepted": false, "reward": 0.7, "optimizer_usd": 7.76889, "optimizer_seconds": 376.81, "eval_usd": 0.0, "eval_seconds": 3543.01, "n_broke": 4, "n_fixed": 3}
+{"phase": "iterate", "iter": 3, "candidate": "cand_0003", "accepted": false, "reward": 0.7, "optimizer_usd": 15.722755, "optimizer_seconds": 1946.48, "eval_usd": 0.0, "eval_seconds": 3451.53, "n_broke": 4, "n_fixed": 3}
+{"phase": "iterate", "iter": 4, "candidate": "cand_0004", "accepted": false, "reward": 0.725, "optimizer_usd": 5.08597, "optimizer_seconds": 343.65, "eval_usd": 0.0, "eval_seconds": 3073.81, "n_broke": 2, "n_fixed": 2}
+{"phase": "iterate", "iter": 5, "candidate": "cand_0005", "accepted": false, "reward": 0.725, "optimizer_usd": 32.94874, "optimizer_seconds": 1096.85, "eval_usd": 0.0, "eval_seconds": 3226.62, "n_broke": 2, "n_fixed": 2}
+{"phase": "finalize", "iter": null, "candidate": "cand_0001", "accepted": null, "reward": 0.725, "optimizer_usd": 0.0, "optimizer_seconds": 0.0, "eval_usd": 0.0, "eval_seconds": 20587.37}
+{"phase": "finalize_baseline", "iter": null, "candidate": "seed", "accepted": null, "reward": 0.42857142857142855, "optimizer_usd": 0.0, "optimizer_seconds": 0.0, "eval_usd": 0.0, "eval_seconds": 13876.03}

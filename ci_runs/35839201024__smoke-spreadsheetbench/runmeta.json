@@ -1,0 +1,20 @@
+{
+  "run_id": 35839201024,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/35839201024",
+  "bench": "spreadsheetbench",
+  "tier": "smoke",
+  "event": "workflow_dispatch",
+  "source": "manual (test-rits-x-508)",
+  "pr": null,
+  "branch": "test-rits-x-508",
+  "sha": "4cc3e9755baa07848ff07005397b46780175af2a",
+  "date": "2026-09-23T12:45:22Z",
+  "iterations": 3,
+  "trials": 3,
+  "agent_model": "rits/Qwen/Qwen3-8B",
+  "optimizer_model": "claude-opus-4-8",
+  "gate_k_se": 1.0,
+  "algorithm": "hill-climb-all",
+  "warm_seed": false,
+  "conclusion": "success"
+}

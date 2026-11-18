@@ -1,0 +1,170 @@
+# Optimize the capability — ship several REAL, SAFE, VERIFIED prompt fixes this iteration
+
+## THE READER (who consumes what you edit)
+At runtime these capabilities are read by `rits/google/gemma-4-31B-it` — capability tier: **strong**. The reader is a capable general model, but less robust than frontier on long or ambiguous context. Keep instructions clear and reasonably explicit; add a worked example for tricky formats; prefer code enforcement for behavioral rules over trusting inference.
+Optimize your edits for THIS reader's capability level, not for your own. When the reader is weaker than you, prefer explicit rules, worked examples, and code enforcement over terse prose you would personally infer.
+
+
+Focus: every failing task on the val split. Current val reward 0.450: 18 solid / 0 flaky / 22 failing of 40 tasks.
+
+## EMPTY SEED — create the capability from scratch
+The capability directory is EMPTY (no pre-existing content). This is the first iteration starting from a blank slate. Your job is to CREATE the initial capability content — not edit existing files (there are none). Analyze the failing trajectories in `./trajectories/` to understand what the agent needs, then create the capability files from scratch (e.g. SKILL.md, prompt.txt, tools.json, policy.md — whatever the capability type requires). Read `./guidance/<cap>/SKILL.md` for the expected file format and structure. A good initial capability addresses the most common failure patterns visible in the trajectories.
+
+
+GOAL: raise the eval score as much as you can THIS iteration, then STOP (the harness
+re-scores you — don't run evaluation yourself). The capability under optimization is
+PROSE: the agent's prompt / skill text. There are no tool implementations to edit here.
+
+Make **AS MANY real fixes as you can this iteration — solve many issues across many
+trajectories, not just the biggest one.** A timid one- or two-edit iteration is an
+under-used iteration: diagnose EVERY failure cluster in `./trajectories/` and ship a fix
+for each one that passes the three tests below. Breadth is the goal — the more distinct
+failing clusters you fix in this ONE candidate, the larger the gain.
+
+The ONLY brake on breadth is regression: every edit must pass all three tests, because a
+single speculative edit that breaks a passing task can sink an iteration of good work (it
+did in prior runs). So the discipline is "many fixes, each one real and safe" — NOT "few
+fixes". Do not stop at the first cluster; work through them all.
+
+## WHAT YOU MAY EDIT — and the two ways iterations get wasted here
+Edit ONLY the capability files listed in `## What you are editing (the allowed edit space)
+The capability under optimization is composed of these editable artifact(s). Use the FULL edit space below — do not limit yourself to trivial wording tweaks.
+- **system-prompt** — Optimize an agent's system prompt / policy text (instructions, output contract, decision policy).
+  - Allowed edits: Edit the prompt/policy text: instructions, decision policy, and the output contract. Prefer sharpening rules the traces show the agent breaking; do not just append more preamble.
+  - Full guidance (read it): ./guidance/system-prompt/SKILL.md` below (the prompt / skill text in
+this working directory). Everything else you can see is READ-ONLY CONTEXT.
+
+**You may NOT edit the adapter, the harness, the scorer, the benchmark, or the
+environment** — not to make a task pass, not to fix a broken mount or a missing binary,
+not "just to unblock the run". Those files are how your score is MEASURED; changing them
+does not improve the capability, and a gain obtained that way is not a result. An
+iteration that edits infrastructure has produced NOTHING measurable, however green the
+number looks. **If the traces show an ENVIRONMENT fault** (permission denied, missing
+binary, gateway/network error, timeout, container failure — the same error on nearly every
+task, unrelated to the task's content), then the correct and complete action is:
+1. do NOT edit the prompt to work around it (a prose workaround for a broken environment
+   is a speculative edit that fails the REAL test — the prompt is not the defect), and
+2. state the diagnosis in `PROCESS.md` and `JOURNAL.md` precisely — the exact error, how
+   many tasks it hit, and what a human must fix — then STOP. Handing back an accurate
+   "the environment is broken, here is the evidence" is a SUCCESSFUL iteration.
+
+**The other way iterations get wasted: another prose rule for a behavior the agent already
+knows.** When the agent has the rule and skips it anyway, adding a second sentence saying
+the same thing changes nothing — you must change the STRUCTURE that makes it skippable
+(see the levers below): make the step unavoidable and ordered, make the contract explicit,
+or give a worked example it can pattern-match. Prose is for genuine KNOWLEDGE gaps (a
+fact / format / criterion the agent cannot derive) and for STRUCTURE that changes what the
+agent does — not for repetition or emphasis.
+
+## Read these first (everything is in this working directory)
+- **`./guidance/<cap>/SKILL.md` for EACH selected capability — READ IT IN FULL before you
+  edit; it is the MENU of improvement TYPES available to you.** For a prompt capability it
+  lists the concrete kinds of change you can make (role/contract, decision-rule narrowing,
+  missing-rule, worked example, ordered procedure, consolidation of conflicting text). Do
+  not invent change types from memory — take them from the skill, and deliberately apply
+  MULTIPLE DIFFERENT types this iteration, matching each cluster to the strongest type the
+  skill describes for it.
+- `./guidance/diagnose/SKILL.md` — the failure-clustering method. Use it.
+- `./trajectories/` — the FULL traces of the current best candidate (the step you build
+  on). The `## (a) 22 ALWAYS-failing task(s) — fix the shared root cause (full traces in ./trajectories/):
+- 227-40 (reward 0.00): 0/1 test cases passed (Sheet-Level Manipulation, checked range: 'Sheet1'!A14:E17). Test case(s) [1] produced an output file but its values in 'Sheet1'!A14:E17 did not match the expected result. COVERAGE: the target range spans 20 cell(s); your output has a value in 12 of them; the expected output has a value in 17. MISMATCH: 5 of 20 cell(s) differ from the expected output: 5 cell(s) are empty in y
+- 267-18 (reward 0.00): 0/1 test cases passed (Sheet-Level Manipulation, checked range: G1:G2). Test case(s) [1] produced an output file but its values in G1:G2 did not match the expected result. COVERAGE: the target range spans 2 cell(s); your output has a value in 2 of them; the expected output has a value in 2. MISMATCH: 1 of 2 cell(s) differ from the expected output: 1 cell(s) hold a different value of the right type
+- 37378 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: A2:A6). Test case(s) [1] FAILED because the answer cells hold FORMULAS: the grader reads the values saved in the file and does not recalculate, so a formula written with openpyxl reads back as empty. The formula logic itself was right — compute the result in Python and write the literal value instead. Test case(s) [1] FAILED because th
+- 37456 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: G12:J15). Test case(s) [1] produced an output file but its values in G12:J15 did not match the expected result. COVERAGE: the target range spans 16 cell(s); your output has a value in 16 of them; the expected output has a value in 16. MISMATCH: 16 of 16 cell(s) differ from the expected output: 16 cell(s) hold an Excel error text (e.g. 
+- 39046 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: F2:F6). Test case(s) [1] produced an output file but its values in F2:F6 did not match the expected result. COVERAGE: the target range spans 5 cell(s); your output has a value in 5 of them; the expected output has a value in 5. MISMATCH: 5 of 5 cell(s) differ from the expected output: 5 cell(s) hold a number HIGHER than expected. Of th
+- 43436 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: I2:K6). Test case(s) [1] produced an output file but its values in I2:K6 did not match the expected result. COVERAGE: the target range spans 15 cell(s); your output has a value in 15 of them; the expected output has a value in 15. MISMATCH: 12 of 15 cell(s) differ from the expected output: 12 cell(s) hold a different value of the right
+- 46897 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: I3). Test case(s) [1] FAILED because the answer cells hold FORMULAS: the grader reads the values saved in the file and does not recalculate, so a formula written with openpyxl reads back as empty. The formula logic itself was right — compute the result in Python and write the literal value instead. Test case(s) [1] FAILED because the a
+- 48527 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: D2:D5). Test case(s) [1] produced an output file but its values in D2:D5 did not match the expected result. COVERAGE: the target range spans 4 cell(s); your output has a value in 1 of them; the expected output has a value in 4. MISMATCH: 3 of 4 cell(s) differ from the expected output: 3 cell(s) are empty in your output where a value is
+- 50768 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: F12:H14). Test case(s) [1] produced an output file but its values in F12:H14 did not match the expected result. COVERAGE: the target range spans 9 cell(s); your output has a value in 3 of them; the expected output has a value in 3. MISMATCH: 2 of 9 cell(s) differ from the expected output: 1 cell(s) hold a value where the expected outpu
+- 51-12 (reward 0.00): 0/1 test cases passed (Sheet-Level Manipulation, checked range: B6). Test case(s) [1] produced an output file but its values in B6 did not match the expected result. COVERAGE: the target range spans 1 cell(s); your output has a value in 1 of them; the expected output has a value in 1. MISMATCH: 1 of 1 cell(s) differ from the expected output: 1 cell(s) hold a number LOWER than expected.
+` block below summarizes them with argument-level feedback — read
+  the actual traces for the clusters you'll fix, don't rely on the summary alone.
+- `./LEDGER.md` — FACTS (read-only): every prior iteration's outcome + the exact tasks it
+  broke/fixed. Your SAFE test starts here — never re-introduce a change that broke a task.
+- `./JOURNAL.md` — the accumulating handover. Each entry is the optimizer's INTENT, and
+  directly below it the framework stamps a **RESULT** line (objective: ACCEPTED/REJECTED ·
+  Δ · the exact tasks fixed/broke). The RESULT lines — not the intent — are the truth of
+  what worked: read them all before proposing. If the most recent RESULT is **REJECTED**,
+  its batch was reverted; read that entry's `./prior_iterations/<id>/diff.patch`, keep the
+  edits that did NOT appear in its `broke={...}`, and DROP or REDESIGN the ones that did —
+  do NOT resubmit the whole rejected batch, and do NOT abandon the cluster. APPEND your new
+  entry (intent only) below the marker; never edit earlier entries or re-try a refuted idea.
+- `./RUNMAP.md` + `./prior_iterations/<id>/` — EVERY prior iteration's (accepted AND
+  rejected) PROCESS.md + diff.patch. Read the one(s) that touched a cluster you're about to
+  work on, so you build on what worked and avoid repeating what regressed.
+- `./PROCESS.md` — your REQUIRED explainability file for THIS iteration (template inside).
+- `./guidance/optimizer/<name>.md` — your agent's subagent/parallelism features (optional).
+
+
+## Process (do this, then STOP)
+**Parallelism:** Your agent supports parallel subagents/worktrees (see ./guidance/optimizer/claude-code.md). FAN OUT to cover MANY clusters at once: one read-only subagent per trajectory-group to diagnose, then one edit-subagent per issue (each in its own worktree), then MERGE every edit into this ONE candidate with no conflicts. This is how a single iteration fixes many issues across many trajectories, not just the biggest one.
+1. Read your capability SKILL(s) + the diagnose method + the cross-iteration files
+   (LEDGER facts, JOURNAL handover, RUNMAP for clusters you'll touch).
+2. Diagnose THIS iteration's `./trajectories/` ONLY (not stale signatures). Cluster ALL
+   failures by shared root cause — total, partial-credit, AND communication/omission.
+   **First separate ENVIRONMENT faults from capability failures** (see above): a cluster
+   whose every trace dies on the same infrastructure error is not yours to fix.
+   RANK the remaining clusters by LEVERAGE = (# failing tasks × trials × score
+   recoverable), biggest first — but plan to fix ALL of them this iteration.
+3. For EACH cluster, pick the strongest improvement TYPE from the capability SKILL(s)
+   (cross-check the FAILURE TYPE section next) and draft the edit. Across the iteration
+   use MULTIPLE different types from the skills, not the same one repeatedly. Run each
+   edit through the THREE TESTS; keep it only if it passes all three.
+4. Ship every passing edit together in this ONE candidate — cover as many clusters as you
+   can SAFELY (that is the win), and never include an edit that fails a test.
+5. Fill `PROCESS.md` and APPEND your entry to `JOURNAL.md`. STOP.
+
+## Handover (REQUIRED before you STOP)
+- **PROCESS.md** (this iteration): the ranked cluster list (with leverage + CONTRACT/
+  STRUCTURE/KNOWLEDGE/DECISION tag), every kept edit + its lever, the VERIFY-THE-FIX +
+  blast-radius line per edit, any ENVIRONMENT fault you diagnosed and handed back, what you
+  deliberately skipped and why, and (if you used subagents) that you did.
+- **JOURNAL.md** (append ONE entry below the marker; never edit earlier entries). Write
+  INTENT only — you cannot know your gate result; the framework stamps the RESULT below
+  your entry: the changes I made (1 line/edit, naming the section + cluster) · the
+  EXPECTED effect + why each is safe · which prior RESULTS I built on and which regressing
+  edits I did NOT re-try (cite ids) · refuted hypotheses (a prior RESULT disproved — never
+  re-test) · high-value clusters not yet cracked + designs already tried · plateau signal +
+  which lever to switch to · focus next iteration.
+
+## (a) 22 ALWAYS-failing task(s) — fix the shared root cause (full traces in ./trajectories/):
+- 227-40 (reward 0.00): 0/1 test cases passed (Sheet-Level Manipulation, checked range: 'Sheet1'!A14:E17). Test case(s) [1] produced an output file but its values in 'Sheet1'!A14:E17 did not match the expected result. COVERAGE: the target range spans 20 cell(s); your output has a value in 12 of them; the expected output has a value in 17. MISMATCH: 5 of 20 cell(s) differ from the expected output: 5 cell(s) are empty in y
+- 267-18 (reward 0.00): 0/1 test cases passed (Sheet-Level Manipulation, checked range: G1:G2). Test case(s) [1] produced an output file but its values in G1:G2 did not match the expected result. COVERAGE: the target range spans 2 cell(s); your output has a value in 2 of them; the expected output has a value in 2. MISMATCH: 1 of 2 cell(s) differ from the expected output: 1 cell(s) hold a different value of the right type
+- 37378 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: A2:A6). Test case(s) [1] FAILED because the answer cells hold FORMULAS: the grader reads the values saved in the file and does not recalculate, so a formula written with openpyxl reads back as empty. The formula logic itself was right — compute the result in Python and write the literal value instead. Test case(s) [1] FAILED because th
+- 37456 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: G12:J15). Test case(s) [1] produced an output file but its values in G12:J15 did not match the expected result. COVERAGE: the target range spans 16 cell(s); your output has a value in 16 of them; the expected output has a value in 16. MISMATCH: 16 of 16 cell(s) differ from the expected output: 16 cell(s) hold an Excel error text (e.g. 
+- 39046 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: F2:F6). Test case(s) [1] produced an output file but its values in F2:F6 did not match the expected result. COVERAGE: the target range spans 5 cell(s); your output has a value in 5 of them; the expected output has a value in 5. MISMATCH: 5 of 5 cell(s) differ from the expected output: 5 cell(s) hold a number HIGHER than expected. Of th
+- 43436 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: I2:K6). Test case(s) [1] produced an output file but its values in I2:K6 did not match the expected result. COVERAGE: the target range spans 15 cell(s); your output has a value in 15 of them; the expected output has a value in 15. MISMATCH: 12 of 15 cell(s) differ from the expected output: 12 cell(s) hold a different value of the right
+- 46897 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: I3). Test case(s) [1] FAILED because the answer cells hold FORMULAS: the grader reads the values saved in the file and does not recalculate, so a formula written with openpyxl reads back as empty. The formula logic itself was right — compute the result in Python and write the literal value instead. Test case(s) [1] FAILED because the a
+- 48527 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: D2:D5). Test case(s) [1] produced an output file but its values in D2:D5 did not match the expected result. COVERAGE: the target range spans 4 cell(s); your output has a value in 1 of them; the expected output has a value in 4. MISMATCH: 3 of 4 cell(s) differ from the expected output: 3 cell(s) are empty in your output where a value is
+- 50768 (reward 0.00): 0/1 test cases passed (Cell-Level Manipulation, checked range: F12:H14). Test case(s) [1] produced an output file but its values in F12:H14 did not match the expected result. COVERAGE: the target range spans 9 cell(s); your output has a value in 3 of them; the expected output has a value in 3. MISMATCH: 2 of 9 cell(s) differ from the expected output: 1 cell(s) hold a value where the expected outpu
+- 51-12 (reward 0.00): 0/1 test cases passed (Sheet-Level Manipulation, checked range: B6). Test case(s) [1] produced an output file but its values in B6 did not match the expected result. COVERAGE: the target range spans 1 cell(s); your output has a value in 1 of them; the expected output has a value in 1. MISMATCH: 1 of 1 cell(s) differ from the expected output: 1 cell(s) hold a number LOWER than expected.
+
+## Currently PASSING (18 task(s)) — your edit MUST NOT regress these
+These tasks already score ~1.0. Preserve their behavior: any edit that changes their trajectory is a regression and will be rejected. Protect: 12864, 142-12, 2768, 31628, 382-10, 38462, 395-36, 402-43, 416-15, 45635, 463-17, 47798, 48588, 48620, 48921, 560-12, 59595, 9726
+
+## The TWO files you may edit (this benchmark)
+Your capability is BOTH of these, and an iteration that only touches the first is leaving
+most of the agent's instruction surface untouched:
+
+1. **`prompt.md`** — the agent's SYSTEM message: who it is, how it should work, what to
+   check. ~40% of the words the agent reads.
+
+2. **`task_template.md`** — the agent's FIRST USER message: how the job is framed, what each
+   field means, and the interaction contract. ~60% of the words the agent reads. It is
+   ordinary prose and you may reword, restructure, add to, or DELETE from it — including
+   guidance that is actively unhelpful. (Read it critically: a line telling the agent it is
+   finished as soon as an output file exists will discourage it from verifying values, which
+   is the most common way tasks fail here.)
+
+   The `{placeholders}` in it are filled in per task and are LOAD-BEARING. Keep every one of
+   `{instruction}` `{spreadsheet_path}` `{spreadsheet_content}` `{instruction_type}`
+   `{answer_position}` `{output_path}`; `{max_turns}` is optional; invent no others; write a
+   literal brace as `{{` or `}}`. Break that and EVERY task scores 0 — the agent is never
+   told where to write its answer — so the candidate is rejected outright.
+
+Decide per cluster which file is the right place to fix it, and say which you chose in
+PROCESS.md.
+
+
+## Run budget (iteration 2/5 (3 after this one); 1/5 consecutive rejects)
+

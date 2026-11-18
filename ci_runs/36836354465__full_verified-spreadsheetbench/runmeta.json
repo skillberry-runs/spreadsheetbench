@@ -1,0 +1,21 @@
+{
+  "run_id": 36836354465,
+  "run_url": "https://github.com/skillberry-ai/cap-evolve/actions/runs/36836354465",
+  "bench": "spreadsheetbench",
+  "tier": "full_verified",
+  "event": "workflow_dispatch",
+  "source": "manual (run/gpt55-ete)",
+  "pr": null,
+  "branch": "run/gpt55-ete",
+  "sha": "1118d1826a4cb4d65bd0c582c41257aae60ed553",
+  "date": "2026-10-01T09:10:01Z",
+  "iterations": 0,
+  "trials": 1,
+  "agent_model": "ibm-ete/azure/gpt-5.5",
+  "optimizer_model": "ibm-ete/aws/claude-opus-5",
+  "gate_k_se": 0.2,
+  "algorithm": "hill-climb-all",
+  "warm_seed": false,
+  "reward_metric": "hard_no_recalc",
+  "conclusion": "success"
+}

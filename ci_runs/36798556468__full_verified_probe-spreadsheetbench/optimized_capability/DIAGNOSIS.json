@@ -1,0 +1,150 @@
+{
+ "candidate": "cand_0001",
+ "headline": "Create capability from empty seed: no-recalc literal-value contract, inspect\u2192reproduce-examples\u2192write\u2192verify procedure, openpyxl writes",
+ "clusters": [
+  {
+   "id": "A",
+   "name": "Formula instead of value",
+   "detail": "Grader reads data_only without recalculation; openpyxl formulas read as None",
+   "tasks": [
+    "37378",
+    "46897",
+    "53383",
+    "55049",
+    "6698",
+    "7902",
+    "8942",
+    "37456",
+    "53647",
+    "54144",
+    "55979",
+    "56563",
+    "9569"
+   ],
+   "scope": "WIDESPREAD",
+   "latent": false,
+   "tag": "KNOWLEDGE"
+  },
+  {
+   "id": "B",
+   "name": "No verification / wasted turns",
+   "detail": "Template said done once file exists; identical no-output code resubmitted",
+   "tasks": [],
+   "scope": "SYSTEMIC",
+   "latent": false,
+   "tag": "BEHAVIORAL"
+  },
+  {
+   "id": "C",
+   "name": "Pattern misread vs examples/header row",
+   "detail": "Computed rule not checked against pre-filled cells or expected-result blocks; header assumed in row 1",
+   "tasks": [
+    "39046",
+    "43436",
+    "48527",
+    "59196",
+    "50768",
+    "51-12"
+   ],
+   "scope": "WIDESPREAD",
+   "latent": false,
+   "tag": "BEHAVIORAL"
+  },
+  {
+   "id": "D",
+   "name": "to_excel layout damage",
+   "detail": "DataFrame writes shift rows, drop header/sheets",
+   "tasks": [
+    "227-40",
+    "80-42"
+   ],
+   "scope": "BOUNDED",
+   "latent": false,
+   "tag": "KNOWLEDGE"
+  },
+  {
+   "id": "E",
+   "name": "Instruction semantics details",
+   "detail": "Fill colour attribute, exact strings, error cells in aggregates",
+   "tasks": [
+    "267-18"
+   ],
+   "scope": "BOUNDED",
+   "latent": false,
+   "tag": "KNOWLEDGE"
+  }
+ ],
+ "edits": [
+  {
+   "id": "E1",
+   "title": "Output contract: literal values, types, no recalc reason",
+   "files": [
+    "prompt.md",
+    "task_template.md"
+   ],
+   "lever": "CONTRACT",
+   "clusters": [
+    "A"
+   ],
+   "blast_radius": "BOUNDED",
+   "verified": "Checked against scorer and golden values of 53647/54144/56563; no passing trace wrote formulas"
+  },
+  {
+   "id": "E2",
+   "title": "Write with openpyxl, pandas offset note",
+   "files": [
+    "prompt.md"
+   ],
+   "lever": "KNOWLEDGE",
+   "clusters": [
+    "D"
+   ],
+   "blast_radius": "MODERATE",
+   "verified": "227-40 golden A14:E17 includes header; passing writes were literal values"
+  },
+  {
+   "id": "E3",
+   "title": "Ordered inspect/reproduce-examples/write/verify/stop procedure",
+   "files": [
+    "prompt.md",
+    "task_template.md"
+   ],
+   "lever": "BEHAVIORAL",
+   "clusters": [
+    "B",
+    "C"
+   ],
+   "blast_radius": "MODERATE",
+   "verified": "39046/43436/59196 goldens reproduce pre-filled pattern; wording does not freeze pre-filled cells (59595,48620,382-10,416-15,9726)"
+  },
+  {
+   "id": "E4",
+   "title": "Practical notes (fill colour, error strings, exact text)",
+   "files": [
+    "prompt.md"
+   ],
+   "lever": "KNOWLEDGE",
+   "clusters": [
+    "E"
+   ],
+   "blast_radius": "BOUNDED",
+   "verified": "267-18 G2 fgColor FFFFFF00 only; 55979 golden 'Supplier_1'"
+  }
+ ],
+ "skipped": [
+  {
+   "title": "80-42 large consolidation",
+   "reason": "scale-specific; only general levers"
+  },
+  {
+   "title": "50768 matrix layout",
+   "reason": "would need task-specific guidance"
+  }
+ ],
+ "techniques": [
+  "golden-cell diffing",
+  "scorer reading",
+  "output contract with reason",
+  "ordered procedure"
+ ]
+}

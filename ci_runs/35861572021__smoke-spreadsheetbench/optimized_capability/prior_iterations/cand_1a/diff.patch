@@ -1,0 +1,89 @@
+--- a/prompt.md
++++ b/prompt.md
+@@ -8,2 +8,86 @@
+ - Always save your result to the exact output_path given, creating any missing parent directories first.
+ - If code execution returns an error, read the traceback carefully and fix the code — do not repeat a failing approach unchanged.
++
++## Read source VALUES, not formula text
++
++`openpyxl.load_workbook(path)` returns a formula cell as its formula STRING — `'=SUM(A7:G7)'`, not the number it evaluates to. Code that then filters with `isinstance(v, (int, float))`, `pd.to_numeric(..., errors='coerce')`, or a bare `try: total += v`, silently DROPS every such cell. No error is raised; the totals simply come out too LOW.
++
++So when you read cells in order to COMPUTE with them, read the cached numbers:
++
++<example>
++# READ with data_only=True. Keep a second, plain handle for WRITING, so formulas
++# elsewhere in the workbook survive.
++wb_read  = openpyxl.load_workbook(path, data_only=True)   # numbers
++wb_write = openpyxl.load_workbook(path)                   # preserves other formulas
++src = wb_read['Sheet1']
++print([(src.cell(7, c).value, type(src.cell(7, c).value).__name__) for c in range(1, 10)])
++# -> [(None,'NoneType'), (1128,'int'), (52173.5,'float'), ...]   values   — good
++# -> [(None,'NoneType'), ('=SUM(A7:G7)','str'), ...]             formulas — re-read!
++</example>
++
++Before aggregating a row, column or block, PRINT the raw source cells you are about to
++aggregate, each with `type(...).__name__`. If any prints as a `str` beginning with `=`, you
++are summing formula text: re-read with `data_only=True`, or with `pandas.read_excel`, which
++already returns cached values. Adding `data_only=True` to a read is safe even when the
++workbook holds no formulas.
++
++## Write the cells the answer determines — and no filler
++
++A cell whose value the instruction does not determine must be left EXACTLY as the input had
++it. Never pad the remainder of a range with `0`, `''`, or `None` for completeness: the grader
++compares your cell against the expected cell, and an invented `0` sitting where the expected
++output keeps the cell's own original value is scored as a wrong cell — the same cost as a
++wrong number.
++
++- WRONG: `results.append(monthly_val if active else 0)` — every inactive cell now holds a
++  `0` the answer never had, and pandas may write that whole column as `int` where a `float`
++  was expected.
++- RIGHT: write only what your derived rule produces a value for, and skip the rest —
++  `if active: ws.cell(row=r, column=c).value = monthly_val`.
++
++This forbids INVENTED filler only. When the instruction itself calls for cells to become
++empty — deleting blank rows, clearing a block, shifting rows up so the tail of a range ends
++up blank — carrying that out IS the answer, including leaving cells inside answer_position
++empty afterwards. Do it.
++
++## Keep DataFrame rows and Excel rows aligned
++
++answer_position is always in EXCEL coordinates: 1-based, A1 is row 1, column 1. A pandas
++DataFrame is 0-based and by default consumes the sheet's FIRST ROW as its column names.
++Mixing the two conventions shifts every value by one row, which is the most common silent
++failure on this benchmark.
++
++- `pd.read_excel(p)` (default header): `df.iloc[i]` is EXCEL ROW **i + 2**.
++- `pd.read_excel(p, header=None)`: `df.iloc[i]` is EXCEL ROW **i + 1**.
++- `openpyxl`: `ws.cell(row=r, column=c)` IS Excel row r, column c — no offset at all.
++
++If you read a frame and write that frame back out, the header handling must MATCH on both
++sides: `read_excel(p)` pairs with `to_excel(out, index=False)`; `read_excel(p, header=None)`
++pairs with `to_excel(out, index=False, header=False)`. Pairing `read_excel(p)` with
++`header=False` deletes the sheet's first row and moves every answer up one row.
++
++When you compute from a DataFrame but write with openpyxl, write the offset down in a comment
++and check ONE cell by hand — print the source row and the Excel row you are about to write it
++to — before writing all of them.
++
++## Cover exactly the target range
++
++The spreadsheet_content block states TARGET SIZE: how many cells answer_position covers.
++Compute the same count from the loops you are about to run and print both numbers; if they
++disagree, your extent is wrong. `range(6, 31)` covers columns F..AD, not F..AE — Python's
++upper bound is exclusive, so the last column needs `range(6, 32)`.
++
++Derive extents from the DATA, not from a number you assumed: locate a table by SEARCHING for
++its marker row/column and printing where you found it (`.shape`, first and last row), because
++the other graded copies of this workbook have different row and column counts. When you delete
++or shift rows, print how many rows the sheet had and how many it has now, and check that
++number against what the instruction implies — a blank-run scan that stops at the first
++non-blank row will delete far fewer rows than a repeating header block requires.
++
++## When a round does not move you forward
++
++Never re-send a code block unchanged; it produces the same result and costs a round. If a
++round taught you nothing, change something OBSERVABLE: print the intermediate table you
++extracted — its `.index`, `.columns`, `.shape` — or one source cell with its type. A frame
++whose `.columns` print as all-`NaN`, or whose `.index` holds label text instead of data keys,
++is the real defect behind a downstream `IndexError` or a block of zeros.

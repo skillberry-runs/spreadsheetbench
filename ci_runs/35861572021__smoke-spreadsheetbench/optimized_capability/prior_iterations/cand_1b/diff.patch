@@ -1,0 +1,80 @@
+--- a/task_template.md
++++ b/task_template.md
+@@ -42,9 +42,70 @@
+ {output_path}
+ 
+-You have up to {max_turns} rounds of interaction. In each round, reply with exactly ONE python code block:
+-1. Information-gathering code (e.g. inspecting the file) — the execution result is returned to you.
+-2. Solution code that writes the modified file to output_path.
+-3. Verification code: re-open output_path and print the values you wrote in answer_position,
+-   to confirm they are correct before finishing. If they are wrong, fix your code and write again.
+-Reply without a code block when you are satisfied the saved file is correct.
+-If your code raises an error, the traceback will be returned to you; fix the code and try again.
++## How to work: {max_turns} rounds, in this ORDER
++
++Reply with exactly ONE ```python code block per round. The execution result comes back to you
++as the next message. Do the rounds in the order below; each one is a precondition of the next.
++
++**Round 1 — LOOK before you compute. Write no answer this round.**
++The preview above shows only the first few rows, and never tells you a cell's Python type. So
++print, for the cells your calculation will actually consume:
++
++```python
++import openpyxl, pandas as pd
++wb = openpyxl.load_workbook(SPREADSHEET_PATH, data_only=True)   # data_only -> cached NUMBERS
++for name in wb.sheetnames:
++    ws = wb[name]
++    print(name, 'dims', ws.dimensions, ws.max_row, ws.max_column)
++# the exact source cells you will aggregate, WITH their types:
++ws = wb[wb.sheetnames[0]]
++print([(ws.cell(r, c).value, type(ws.cell(r, c).value).__name__)
++        for c in range(1, ws.max_column + 1)])        # one representative row
++```
++
++Read the result and answer these three questions in your next message before any arithmetic:
++1. **Are these values or formula text?** A cell printing as a `str` that starts with `=` means
++   you read formulas, not numbers. `load_workbook(path)` WITHOUT `data_only=True` does that —
++   and a guard like `isinstance(v, (int, float))` then skips those cells with no error, so
++   every total silently comes out too LOW. Re-read with `data_only=True` or `pd.read_excel`.
++2. **Where does each table really start and end?** Find its marker row/column by SEARCHING for
++   the label and printing the index you found, never by assuming a row number. The two other
++   graded copies of this workbook have different row and column counts, and your final code
++   runs on them too.
++3. **Which cells does the instruction actually determine?** Those and only those get written.
++
++**Round 2 — write the answer.** Compute, write the cells, save to output_path.
++- answer_position is in EXCEL coordinates (1-based, A1 = row 1, col 1). `ws.cell(row=r,
++  column=c)` needs no offset; `pd.read_excel(p).iloc[i]` is Excel row **i+2** (the header row
++  was consumed) and `pd.read_excel(p, header=None).iloc[i]` is Excel row **i+1**. If you write
++  a frame back out, the header handling must match the read: `read_excel(p)` pairs with
++  `to_excel(out, index=False)`; `read_excel(p, header=None)` pairs with `to_excel(out,
++  index=False, header=False)`. Mismatching them shifts every answer one row.
++- Write only the cells your rule produces a value for. Do NOT pad the rest of the range with
++  `0`, `''` or `None` — an invented `0` where the expected output keeps the cell's own
++  original value is scored exactly as wrong as a wrong number. (Cells the INSTRUCTION asks you
++  to clear, or that end up blank because you deleted or shifted rows, are a different thing:
++  that is the answer, so leave them blank.)
++
++**Round 3 — CHECK by comparison, not by looking.** Re-opening output_path and printing what
++you just wrote proves nothing: it shows your own numbers back to you. Print, in one block:
++  a. `len()` / `.shape` of the region you wrote vs the TARGET SIZE stated in
++     spreadsheet_content. If they differ, your extent is wrong — remember Python's upper bound
++     is exclusive, so columns F..AE is `range(6, 32)`, not `range(6, 31)`.
++  b. ONE target cell RECOMPUTED from the input by a second, different route (e.g. openpyxl if
++     you solved with pandas), printed next to the value you wrote, and their difference. A
++     disagreement here is the bug — a wrong total shows up as an obvious factor, not a rounding
++     nudge.
++  c. the sheet's row/column count before and after, if you inserted, deleted or shifted rows,
++     plus whether that matches what the instruction implies.
++  d. any number the instruction itself names (a stated total, a "roughly 39 million"), next to
++     yours.
++If any of a–d disagrees, you have found a real defect: fix the code and write the file again.
++
++**Never re-send a code block unchanged** — it returns the same result and wastes the round. If
++a round taught you nothing, print something new and OBSERVABLE instead: the intermediate table
++you extracted with its `.index`, `.columns` and `.shape`. A frame whose `.columns` are all
++`NaN`, or whose `.index` holds label text instead of data keys, is the real cause behind a
++downstream `IndexError` or a block of zeros.
++
++Reply without a code block only once a check in round 3 has actually AGREED. If your code
++raises an error, the traceback comes back to you; fix the code and try again.

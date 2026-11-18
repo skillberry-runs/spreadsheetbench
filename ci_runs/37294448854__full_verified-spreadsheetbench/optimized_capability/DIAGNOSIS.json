@@ -1,0 +1,130 @@
+{
+  "candidate": "cand_0001",
+  "headline": "Initial capability creation: address formulas, error strings, and precision",
+  "clusters": [
+    {
+      "id": "A",
+      "name": "Formula Writing",
+      "detail": "Agent writes Excel formulas instead of literal values.",
+      "tasks": [
+        "37378",
+        "46897",
+        "53383",
+        "55049",
+        "6698",
+        "7902",
+        "8942"
+      ],
+      "scope": "SYSTEMIC",
+      "latent": false,
+      "tag": "KNOWLEDGE"
+    },
+    {
+      "id": "B",
+      "name": "Excel Error Strings",
+      "detail": "Agent writes #N/A or similar error strings.",
+      "tasks": [
+        "37456",
+        "53647",
+        "54144",
+        "56563"
+      ],
+      "scope": "SYSTEMIC",
+      "latent": false,
+      "tag": "KNOWLEDGE"
+    },
+    {
+      "id": "C",
+      "name": "Unnecessary Modification",
+      "detail": "Agent modifies cells outside requested range.",
+      "tasks": [
+        "39046",
+        "48527",
+        "50768",
+        "54144",
+        "59196",
+        "80-42"
+      ],
+      "scope": "SYSTEMIC",
+      "latent": false,
+      "tag": "BEHAVIORAL"
+    },
+    {
+      "id": "D",
+      "name": "Empty Output Ranges",
+      "detail": "Agent fails to write values to target cells.",
+      "tasks": [
+        "227-40",
+        "48527",
+        "50768",
+        "59196",
+        "80-42",
+        "9569"
+      ],
+      "scope": "SYSTEMIC",
+      "latent": false,
+      "tag": "BEHAVIORAL"
+    }
+  ],
+  "edits": [
+    {
+      "id": "E1",
+      "title": "Forbidden Formulas",
+      "files": [
+        "prompt.md"
+      ],
+      "lever": "KNOWLEDGE",
+      "clusters": [
+        "A"
+      ],
+      "blast_radius": "BOUNDED",
+      "verified": "Rule explicitly forbids formulas and gives rationale."
+    },
+    {
+      "id": "E2",
+      "title": "Error Handling",
+      "files": [
+        "prompt.md"
+      ],
+      "lever": "KNOWLEDGE",
+      "clusters": [
+        "B"
+      ],
+      "blast_radius": "BOUNDED",
+      "verified": "Rule forbids writing error strings."
+    },
+    {
+      "id": "E3",
+      "title": "Precision Rule",
+      "files": [
+        "prompt.md"
+      ],
+      "lever": "BEHAVIORAL",
+      "clusters": [
+        "C"
+      ],
+      "blast_radius": "BOUNDED",
+      "verified": "Rule forbids modifying unrequested cells."
+    },
+    {
+      "id": "E4",
+      "title": "Verification Step",
+      "files": [
+        "prompt.md",
+        "task_template.md"
+      ],
+      "lever": "CONTRACT",
+      "clusters": [
+        "D"
+      ],
+      "blast_radius": "MODERATE",
+      "verified": "Adds verification step to workflow and task contract."
+    }
+  ],
+  "skipped": [],
+  "techniques": [
+    "failure-clustering",
+    "rule-addition",
+    "contract-tightening"
+  ]
+}
